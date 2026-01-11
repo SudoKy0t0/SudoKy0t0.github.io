@@ -1,0 +1,33 @@
+body {
+  background: #0b0f19;
+  color: #e5e7eb;
+  font-family: monospace;
+  max-width: 900px;
+  margin: auto;
+  padding: 2rem;
+}
+
+a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+pre {
+  background: #020617;
+  padding: 1rem;
+  overflow-x: auto;
+  border-left: 4px solid #38bdf8;
+}
+
+code {
+  color: #eab308;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #1f2933;
+}
