@@ -5,7 +5,7 @@ title: About
 
 ## Who am I
 
-I go by **SudoKy0t0**.
+Hello! I go by **SudoKy0t0**.
 
 My main interests are:
 - Offensive security
