@@ -1,0 +1,8 @@
+title: SudoKy0t0 Notes
+description: Security notes, CTF writeups, commands
+theme: null
+
+markdown: kramdown
+highlighter: rouge
+
+permalink: /:year/:month/:day/:title/
