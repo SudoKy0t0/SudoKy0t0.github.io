@@ -10,6 +10,7 @@ Personal notes on:
 - CTFs
 - Exploitation
 - Things worth remembering
+- Writeups
 
 ---
 
