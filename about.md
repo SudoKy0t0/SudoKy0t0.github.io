@@ -48,6 +48,5 @@ I enjoy going deep into:
 
 ## Contact / Presence
 
-- GitHub: https://github.com/SudoKy0t0
-- Gmail: triananavallas [at] gmail [dot] com
-
+- GitHub: [github.com/SudoKy0t0](https://github.com/SudoKy0t0)
+- Email: triananavallas [at] gmail [dot] com
