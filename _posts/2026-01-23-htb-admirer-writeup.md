@@ -424,6 +424,58 @@ Query OK, 0 rows affected (0.000 sec)
 ```
 
 
-After this, we get a permission denied from the adminer page. This is because mysql doesn’t listen on a routable interface, meaning, it will only accept connections locally. How do we fix this? Simple enough, we just need to change a configuration file (I followed this post). It’s important to note that this change must be reverted after finishing the machine, as it can be a security issue for us. Configuration files are usually in the directory /etc, and we can find /mysql inside:
+When trying to access, we get a permission denied from the adminer page. 
 
+<p align="center">
+  <img src="/assets/images/admirer/Captura40.PNG" width="700">
+</p>
+
+This is because mysql doesn’t listen on a routable interface, meaning, it will only accept connections locally. How do we fix this? Simple enough, we just need to change a configuration file (I followed [this post](https://www.tencentcloud.com/techpedia/114093)). It’s important to note that this change must be reverted after finishing the machine, as it can be a security issue for us. Configuration files are usually in the directory /etc, and we can find /mysql inside:
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/admirer]
+└─$ ls -la /etc/mysql
+total 40
+drwxr-xr-x  4 root root  4096 Mar  7  2025 .
+drwxr-xr-x 212 root root 12288 Jan 22 13:29 ..
+drwxr-xr-x  2 root root  4096 Mar  7  2025 conf.d
+-rw-r--r--  1 root root   544 Mar  7  2025 debian.cnf
+-rwxr-xr-x  1 root root  1770 Feb 19  2025 debian-start
+-rw-r--r--  1 root root  1126 Feb 19  2025 mariadb.cnf
+drwxr-xr-x  2 root root  4096 Jan 20 11:54 mariadb.conf.d
+lrwxrwxrwx  1 root root    24 Oct 20  2020 my.cnf -> /etc/alternatives/my.cnf
+-rw-r--r--  1 root root   839 Oct 20  2020 my.cnf.fallback
+```
+Our file is in mariadb.cnf, a greping for 127.0.0.1 tells us the exact one that we want to edit:
+
+```bash
+┌──(kali㉿kali)-[/etc/mysql/mariadb.conf.d]
+└─$ ls
+50-client.cnf
+50-mariadb-clients.cnf
+50-mysqld_safe.cnf
+50-server.cnf
+```
+
+```bash
+┌──(kali㉿kali)-[/etc/mysql/mariadb.conf.d]
+└─$ grep -R "127.0.0.1" .
+./50-server.cnf:bind-address = 127.0.0.1
+```
+
+```ini
+# Instead of skip-networking the default is now to listen only on
+# localhost which is more compatible and is not less secure.
+bind-address            = 127.0.0.1 ---> Replace this with 0.0.0.0
+```
+Finally, we restart the server and try again:
+
+```bash
+┌──(kali㉿kali)-[/etc/mysql/mariadb.conf.d]
+└─$ sudo service mysql restart
+```
+
+<p align="center">
+  <img src="/assets/images/admirer/Captura30.PNG" width="700">
+</p>
 
