@@ -476,6 +476,26 @@ Finally, we restart the server and try again:
 ```
 
 <p align="center">
+  <img src="/assets/images/admirer/Captura29.PNG" width="700">
+</p>
+
+Adminer File Read:
+
+Among the newly discovered privileges, one in particular stood out: the `SQL command` option.
+This feature allows us to execute arbitrary SQL queries directly on the server, which significantly expands the attack surface.
+
+This functionality can be abused to read local files from the system by leveraging SQL file-reading capabilities. As described in this [post](https://podalirius.net/en/articles/writing-an-exploit-for-adminer-4.6.2-arbitrary-file-read-vulnerability/), only a single SQL query is required, along with a table to receive the output, in order to dump the contents of an arbitrary file.
+
+To create the table, we can do it directly on the MYSQL server we just opened:
+
+```sql
+MariaDB [admirertest]> CREATE TABLE testadmirer ( OUTPUT TEXT(4096) );
+Query OK, 0 rows affected (0.005 sec)
+```
+
+We can make sure our table is there in the main dashboard:
+
+<p align="center">
   <img src="/assets/images/admirer/Captura30.PNG" width="700">
 </p>
 
