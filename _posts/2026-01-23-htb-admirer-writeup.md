@@ -13,91 +13,150 @@ categories: [ctf]
 - **OS:** Linux
 - **Difficulty:** Easy
 
-Admirer is an easy machine on HackTheBox that shows the importance of basic directory fuzzing and file enumeration, as well as core understanding of the configuration in sudo and the interaction between linux and python.
+Admirer is an easy machine on HackTheBox that shows the importance of basic directory fuzzing and file enumeration, as well as core understanding of the configuration in sudo and the interaction between Linux and Python.
+
 ---
 
 ## Enumeration
 
-Nmap Scan:
+### Nmap Scan
 
-<img src="/assets/images/admirer/Captura.PNG" width="650">
+<p align="center">
+  <img src="/assets/images/admirer/Captura.PNG" width="600">
+</p>
 
-Nmap reveals a few interesting ports, starting with port 21, ftp, where anonymous access is not allowed, so that is as far as we can go there.
-Next stop, port 80, clicking around doesn’t reveal anything interesting and the contact form seems to not be implemented yet. Running feroxbuster in the background while I play around with the page.
+Nmap reveals a few interesting ports, starting with port 21, FTP, where anonymous access is not allowed, so that is as far as we can go there.
+Next stop, port 80. Clicking around doesn’t reveal anything interesting and the contact form seems to not be implemented yet. Running feroxbuster in the background while I play around with the page.
 
-![Nmap scan results](/assets/images/admirer/Captura2.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura2.PNG" width="600">
+</p>
 
-Nmap showed us that there’s a robots.txt, take a look at it, reveals an interesting dir /admin-dir, however, returns a 403, it’s forbidden.
+Nmap showed us that there’s a robots.txt. Taking a look at it reveals an interesting directory, `/admin-dir`, however it returns a 403 — forbidden.
 
-![Nmap scan results](/assets/images/admirer/Captura3.PNG)
-![Nmap scan results](/assets/images/admirer/Captura4.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura3.PNG" width="600">
+</p>
 
-Beyond that, it displays some interesting information: “This folder contains personal contacts and creds”. I waited 10 minutes till my initial feroxbuster scan finished but nothing interesting popped:
+<p align="center">
+  <img src="/assets/images/admirer/Captura4.PNG" width="600">
+</p>
 
-![Nmap scan results](/assets/images/admirer/Captura5.PNG)
+Beyond that, it displays some interesting information:  
+> “This folder contains personal contacts and creds”.
 
-My instant thought after reading the comment in robots.txt was scanning the admin-dir directly, with new extensions like .txt or .pdf that can contain the before mentioned “contacts” and “creds”
+I waited around 10 minutes for my initial feroxbuster scan to finish, but nothing interesting popped up:
 
-![Nmap scan results](/assets/images/admirer/Captura6.PNG)
-Credentials.txt
-![Nmap scan results](/assets/images/admirer/Captura7.PNG)
-Contacts.txt
-![Nmap scan results](/assets/images/admirer/Captura8.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura5.PNG" width="600">
+</p>
 
-The most interesting here is the ftp user, because as we saw before, we have an ftp server that doesn’t allow anonymous access. With our newly obtained credentials, we can now login:
+My instant thought after reading the comment in `robots.txt` was scanning the `admin-dir` directly, with new extensions like `.txt` or `.pdf` that could contain the mentioned “contacts” and “creds”.
 
-![Nmap scan results](/assets/images/admirer/Captura9.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura6.PNG" width="600">
+</p>
 
-These two files both look interesting, I will transfer them to my machine and take a closer look:
+**Credentials.txt**
 
-![Nmap scan results](/assets/images/admirer/Captura10.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura7.PNG" width="600">
+</p>
 
-I had high expectations on the dump.sql, but it doesn’t reveal anything interesting. As it is stated, it’s just a backup for a database named “admirerdb” that contains only one table with the contents of the main page.
+**Contacts.txt**
 
-![Nmap scan results](/assets/images/admirer/Captura11.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura8.PNG" width="600">
+</p>
 
-We also obtained a html.tar.gz, extracted it’s contents to reveal a backup of the site
+The most interesting information here is the FTP user. As we saw earlier, there is an FTP server that doesn’t allow anonymous access. With our newly obtained credentials, we can now log in:
 
-![Nmap scan results](/assets/images/admirer/Captura12.PNG)
-![Nmap scan results](/assets/images/admirer/Captura13.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura9.PNG" width="600">
+</p>
 
-The most interesting files would be our already read contacts.txt and credentials.txt, the index.php contains some credentials too (that don’t work anywhere) and of course a new directory is revealed to us “/utility-scripts”. Upon accessing to it through firefox, it’s also forbidden:
+These two files both look interesting, so I transferred them to my machine for further analysis:
 
-![Nmap scan results](/assets/images/admirer/Captura14.PNG)
-![Nmap scan results](/assets/images/admirer/Captura15.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura10.PNG" width="600">
+</p>
 
-Nonetheless, we have some interesting information about it, with four php scripts inside of it:
-admin_tasks is a php script that runs commands effectively, db_admin seems like a configuration file for the database, info.php is just phpinfo.php and phptest is a test script with nothing of value. Reviewing them, the ones that get my attention is admin_tasks.php and db_admin.php
+I had high expectations for `dump.sql`, but it doesn’t reveal anything interesting. As stated, it’s just a backup for a database named `admirerdb` that contains only one table with the contents of the main page.
 
-![Nmap scan results](/assets/images/admirer/Captura16.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura11.PNG" width="600">
+</p>
 
-Why is this interesting? I tried the given credentials in ssh and ftp but got no success. Despite looking plain at first, when trying to access it, it returns a 404, and looking at the comment on the bottom, it looks like they already found a “better open source alternative”:
+We also obtained an `html.tar.gz`. Extracting its contents reveals a backup of the website:
 
-![Nmap scan results](/assets/images/admirer/Captura17.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura12.PNG" width="600">
+</p>
 
-Why’s admin_tasks interesting? Beyond being the longest of the four, this one actually has functionality, meaning it can effectively execute commands:
+<p align="center">
+  <img src="/assets/images/admirer/Captura13.PNG" width="600">
+</p>
 
-![Nmap scan results](/assets/images/admirer/Captura18.PNG)
-![Nmap scan results](/assets/images/admirer/Captura19.PNG)
+The most interesting files here are our already reviewed `contacts.txt` and `credentials.txt`.  
+The `index.php` file also contains some credentials, but they don’t seem to work anywhere.
 
-Upon reviewing admin_tasks, I thought about some sort of RCE but reading through it didn’t help. The script is secured against common attack paths that lead to RCE. While I spent some time trying to abuse this script, I also decided to run another scan against the directory /utility-scripts, this time with the php extension, to see if I could find another script that was not in our obtained backup.
+More importantly, a new directory is revealed: `/utility-scripts`.  
+Accessing it through Firefox also returns a forbidden response:
 
-![Nmap scan results](/assets/images/admirer/Captura20.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura14.PNG" width="600">
+</p>
 
-I’m definitely not satisfied with this, I will try another wordlist just in case (I actually tried 4 different wordlists, and this one beared fruits):
+<p align="center">
+  <img src="/assets/images/admirer/Captura15.PNG" width="600">
+</p>
 
-![Nmap scan results](/assets/images/admirer/Captura21.PNG)
+Nonetheless, we now know that the directory contains four PHP scripts:
+- `admin_tasks.php`
+- `db_admin.php`
+- `info.php`
+- `phptest.php`
 
-Adminer.php
+Out of these, the most interesting ones are `admin_tasks.php` and `db_admin.php`.
 
-![Nmap scan results](/assets/images/admirer/Captura22.PNG)
+<p align="center">
+  <img src="/assets/images/admirer/Captura16.PNG" width="600">
+</p>
 
+Why is this interesting? I tried the given credentials via SSH and FTP but had no success.  
+Despite looking plain at first, accessing it returns a 404. Looking at the comment at the bottom, it seems they already found a “better open source alternative”:
 
+<p align="center">
+  <img src="/assets/images/admirer/Captura17.PNG" width="600">
+</p>
 
+Why is `admin_tasks.php` interesting?  
+Beyond being the longest of the four scripts, this one actually has functionality — it executes system commands.
 
+<p align="center">
+  <img src="/assets/images/admirer/Captura18.PNG" width="600">
+</p>
 
+<p align="center">
+  <img src="/assets/images/admirer/Captura19.PNG" width="600">
+</p>
 
+After reviewing `admin_tasks.php`, I initially thought about some form of RCE, but reading through the code didn’t help much. The script is protected against common attack paths.
 
+While experimenting with this, I also ran another scan against `/utility-scripts`, this time focusing specifically on PHP files, to check if there were any scripts missing from our backup.
 
+<p align="center">
+  <img src="/assets/images/admirer/Captura20.PNG" width="600">
+</p>
 
+At this point I wasn’t satisfied, so I tried another wordlist (I actually tested four in total, and this one finally paid off):
 
+<p align="center">
+  <img src="/assets/images/admirer/Captura21.PNG" width="600">
+</p>
+
+**Adminer.php**
+
+<p align="center">
+  <img src="/assets/images/admirer/Captura22.PNG" width="600">
+</p>
