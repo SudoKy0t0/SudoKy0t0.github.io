@@ -499,3 +499,46 @@ We can make sure our table is there in the main dashboard:
   <img src="/assets/images/admirer/Captura30.PNG" width="700">
 </p>
 
+With the new table “testadmirer” we now have a place to dump the contents of the files in and we can use this command to test:
+
+```sql
+LOAD DATA LOCAL INFILE '/etc/passwd'
+INTO TABLE testadmirer
+FIELDS TERMINATED BY '\n';
+```
+
+<p align="center">
+  <img src="/assets/images/admirer/Captura31.PNG" width="700">
+</p>
+
+Open_basedir is a PHP security directive that limits file access functions (e.g., fopen(), include()) to specific directories, preventing scripts from accessing unauthorized files. I’ll try a different file that doesn’t have restrictions, for example, a file in the web page. If in doubt, we can check phpinfo.php (/utility-scripts/info.php) to see the actual directory the webpage is rooted in:
+
+<p align="center">
+  <img src="/assets/images/admirer/Captura32.PNG" width="700">
+</p>
+
+Our command will be as following:
+
+```sql
+LOAD DATA LOCAL INFILE '/var/www/html/index.php'
+INTO TABLE testadmirer
+FIELDS TERMINATED BY '\n';
+```
+
+<p align="center">
+  <img src="/assets/images/admirer/Captura33.PNG" width="700">
+</p>
+
+We now access the table to see the info we just dumped:
+
+<p align="center">
+  <img src="/assets/images/admirer/Captura34.PNG" width="700">
+</p>
+
+I remember from before that index.php actually contained some credentials. It doesn’t hurt to check if they’re different, because, as we now, the backup we got before is older and some things might’ve changed:
+
+<p align="center">
+  <img src="/assets/images/admirer/Captura35.PNG" width="700">
+</p>
+
+The password is now different than the one in index.php from the ftp server:
