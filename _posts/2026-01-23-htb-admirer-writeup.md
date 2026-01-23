@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "HTB — Admirer Writeup"
 date: 2026-01-23
 tags: [htb, writeup, linux, web]
