@@ -20,7 +20,7 @@ Admirer is an easy machine on HackTheBox that shows the importance of basic dire
 
 Nmap Scan:
 
-![Nmap scan results](/assets/images/admirer/Captura.PNG)
+<img src="/assets/images/admirer/Captura.PNG" width="500">
 
 Nmap reveals a few interesting ports, starting with port 21, ftp, where anonymous access is not allowed, so that is as far as we can go there.
 Next stop, port 80, clicking around doesn’t reveal anything interesting and the contact form seems to not be implemented yet. Running feroxbuster in the background while I play around with the page.
@@ -79,6 +79,20 @@ Why’s admin_tasks interesting? Beyond being the longest of the four, this one 
 
 ![Nmap scan results](/assets/images/admirer/Captura18.PNG)
 ![Nmap scan results](/assets/images/admirer/Captura19.PNG)
+
+Upon reviewing admin_tasks, I thought about some sort of RCE but reading through it didn’t help. The script is secured against common attack paths that lead to RCE. While I spent some time trying to abuse this script, I also decided to run another scan against the directory /utility-scripts, this time with the php extension, to see if I could find another script that was not in our obtained backup.
+
+![Nmap scan results](/assets/images/admirer/Captura20.PNG)
+
+I’m definitely not satisfied with this, I will try another wordlist just in case (I actually tried 4 different wordlists, and this one beared fruits):
+
+![Nmap scan results](/assets/images/admirer/Captura21.PNG)
+
+Adminer.php
+
+![Nmap scan results](/assets/images/admirer/Captura22.PNG)
+
+
 
 
 
