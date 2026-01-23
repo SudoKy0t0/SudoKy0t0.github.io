@@ -423,3 +423,7 @@ MariaDB [(none)]> FLUSH PRIVILEGES;
 Query OK, 0 rows affected (0.000 sec)
 ```
 
+
+After this, we get a permission denied from the adminer page. This is because mysql doesn’t listen on a routable interface, meaning, it will only accept connections locally. How do we fix this? Simple enough, we just need to change a configuration file (I followed this post). It’s important to note that this change must be reverted after finishing the machine, as it can be a security issue for us. Configuration files are usually in the directory /etc, and we can find /mysql inside:
+
+
