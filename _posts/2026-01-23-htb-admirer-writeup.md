@@ -18,3 +18,9 @@ Admirer is an easy machine on HackTheBox that shows the importance of basic dire
 
 ## Enumeration
 
+Nmap Scan:
+
+![Nmap scan results][/assets/imgages/admirer/Captura.PNG]
+
+Nmap reveals a few interesting ports, starting with port 21, ftp, where anonymous access is not allowed, so that is as far as we can go there.
+Next stop, port 80, clicking around doesn’t reveal anything interesting and the contact form seems to not be implemented yet. Running feroxbuster in the background while I play around with the page
