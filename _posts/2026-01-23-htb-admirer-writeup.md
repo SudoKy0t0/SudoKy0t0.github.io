@@ -21,9 +21,33 @@ Admirer is an easy machine on HackTheBox that shows the importance of basic dire
 
 ### Nmap Scan
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura.PNG" width="700">
-</p>
+```bash
+┌──(kali㉿kali)-[~/hackthebox/admirer/utility-scripts]
+└─$ sudo nmap -p- -sVC 10.129.4.46
+
+Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-20 12:29 EST
+Nmap scan report for admirer.htb (10.129.4.46)
+Host is up (0.033s latency).
+Not shown: 65532 closed tcp ports (reset)
+
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+22/tcp open  ssh     OpenSSH 7.4p1 Debian 10+deb9u7 (protocol 2.0)
+| ssh-hostkey:
+|   2048 4a:71:e9:21:63:69:9d:cb:dd:84:02:1a:23:97:e1:b9 (RSA)
+|   256 c5:95:b6:21:4d:46:a4:25:55:7a:87:3e:19:a8:e7:02 (ECDSA)
+|   256 d0:2d:dd:d0:5c:42:f8:7b:31:5a:be:57:c4:a9:a7:56 (ED25519)
+80/tcp open  http    Apache httpd 2.4.25 ((Debian))
+| http-robots.txt: 1 disallowed entry
+|_/admin-dir
+| http-server-header: Apache/2.4.25 (Debian)
+| http-title: Admirer
+Service Info: OS: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/
+Nmap done: 1 IP address (1 host up) scanned in 29.14 seconds
+```
+
 
 Nmap reveals a few interesting ports, starting with port 21, FTP, where anonymous access is not allowed, so that is as far as we can go there.
 Next stop, port 80. Clicking around doesn’t reveal anything interesting and the contact form seems to not be implemented yet. Running feroxbuster in the background while I play around with the page.
@@ -33,6 +57,10 @@ Next stop, port 80. Clicking around doesn’t reveal anything interesting and th
 </p>
 
 Nmap showed us that there’s a robots.txt. Taking a look at it reveals an interesting directory, `/admin-dir`, however it returns a 403 — forbidden.
+
+<p align="center">
+  <img src="/assets/images/admirer/Captura5.PNG" width="700">
+</p>
 
 <p align="center">
   <img src="/assets/images/admirer/Captura3.PNG" width="700">
@@ -47,15 +75,51 @@ Beyond that, it displays some interesting information:
 
 I waited around 10 minutes for my initial feroxbuster scan to finish, but nothing interesting popped up:
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura5.PNG" width="700">
-</p>
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/admirer/utility-scripts]
+└─$ feroxbuster \
+    -u http://admirer.htb \
+    -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt \
+    -x php -q
+
+301      GET      91l     28w      311c http://admirer.htb/images        -> /images/
+301      GET      91l     28w      314c http://admirer.htb/admin-dir     -> /admin-dir/
+301      GET      91l     28w      318c http://admirer.htb/assets        -> /assets/
+
+200      GET    1531l    529w    6051c http://admirer.htb/index.php
+200      GET      21l     87w    2439c http://admirer.htb/assets/js/jquery.min.js
+200      GET    2050l   4273w   44147c http://admirer.htb/assets/css/main.css
+
+200      GET    2811l   1437w   99825c http://admirer.htb/images/thumbs/thmb_mus01.jpg
+200      GET    4091l   2427w  158968c http://admirer.htb/images/fulls/mind02.jpg
+```
 
 My instant thought after reading the comment in `robots.txt` was scanning the `admin-dir` directly, with new extensions like `.txt` or `.pdf` that could contain the mentioned “contacts” and “creds”.
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura6.PNG" width="700">
-</p>
+```bash
+┌──(kali㉿kali)-[~/hackthebox/admirer]
+└─$ feroxbuster \
+    -u http://admirer.htb/admin-dir \
+    -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt \
+    -x txt,pdf
+
+──────────────────────────────────────────────────────────────
+Target URL            : http://admirer.htb/admin-dir
+Threads               : 50
+Wordlist              : directory-list-2.3-medium.txt
+Status Codes          : All
+Timeout               : 7s
+User-Agent            : feroxbuster/2.11.0
+Extensions            : txt, pdf
+HTTP Methods          : GET
+Recursion Depth       : 4
+──────────────────────────────────────────────────────────────
+
+301      GET      91l     28w      314c http://admirer.htb/admin-dir/ -> /admin-dir/
+200      GET      29l     39w      350c http://admirer.htb/admin-dir/contacts.txt
+200      GET      11l     13w      136c http://admirer.htb/admin-dir/credentials.txt
+```
 
 **Credentials.txt**
 
@@ -87,11 +151,44 @@ I had high expectations for `dump.sql`, but it doesn’t reveal anything interes
   <img src="/assets/images/admirer/Captura11.PNG" width="700">
 </p>
 
-We also obtained an `html.tar.gz`. Extracting its contents reveals a backup of the website:
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura12.PNG" width="700">
-</p>
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/admirer/utility-scripts]
+└─$ cat dump.sql
+```
+```sql
+-- MySQL dump 10.16  Distrib 10.1.41-MariaDB, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: admirerdb
+-- ------------------------------------------------------
+-- Server version       10.1.41-MariaDB-0+deb9u1
+
+DROP TABLE IF EXISTS `items`;
+CREATE TABLE `items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `thumb_path` text NOT NULL,
+  `image_path` text NOT NULL,
+  `title` text NOT NULL,
+  `text` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `items` VALUES
+(1,'images/thumbs/thmb_art01.jpg','images/fulls/art01.jpg','Visual Art','A pure showcase of skill and emotion.'),
+(2,'images/thumbs/thmb_eng02.jpg','images/fulls/eng02.jpg','The Beauty and the Beast','Besides the technology, there is also the eye candy...'),
+(3,'images/thumbs/thmb_nat01.jpg','images/fulls/nat01.jpg','The uncontrollable lightshow','When the sun decides to play at night.'),
+(4,'images/thumbs/thmb_arch02.jpg','images/fulls/arch02.jpg','Nearly Monochromatic','One could simply spend hours looking at this indoor square.'),
+(5,'images/thumbs/thmb_mind01.jpg','images/fulls/mind01.jpg','Way ahead of his time','You probably still use some of his inventions... 500yrs later.'),
+(6,'images/thumbs/thmb_mus02.jpg','images/fulls/mus02.jpg','The outcomes of complexity','Seriously, listen to Dust in Interstellar''s OST. Thank me later.'),
+(7,'images/thumbs/thmb_arch01.jpg','images/fulls/arch01.jpg','Back to basics','And centuries later, we want to go back and live in nature... Sort of.'),
+(8,'images/thumbs/thmb_mind02.jpg','images/fulls/mind02.jpg','We need him back','He might have been a loner who allegedly slept with a pigeon, but that brain...'),
+(9,'images/thumbs/thmb_eng01.jpg','images/fulls/eng01.jpg','In the name of Science','Some theories need to be proven.'),
+(10,'images/thumbs/thmb_mus01.jpg','images/fulls/mus01.jpg','Equal Temperament','Because without him, music would not exist (as we know it today).');
+```
+
+
+We also obtained an `html.tar.gz`. Extracting its contents reveals a backup of the website:
 
 <p align="center">
   <img src="/assets/images/admirer/Captura13.PNG" width="700">
