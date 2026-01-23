@@ -145,15 +145,20 @@ After reviewing `admin_tasks.php`, I initially thought about some form of RCE, b
 
 While experimenting with this, I also ran another scan against `/utility-scripts`, this time focusing specifically on PHP files, to check if there were any scripts missing from our backup.
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura20.PNG" width="700">
-</p>
+feroxbuster \
+  -u http://admirer.htb/utility-scripts \
+  -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt \
+  -x php
+
 
 At this point I wasn’t satisfied, so I tried another wordlist (I actually tested four in total, and this one finally paid off):
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura21.PNG" width="700">
-</p>
+403      GET      91l     28w      320c http://admirer.htb/utility-scripts/
+403      GET      91l     28w      314c http://admirer.htb/admin-dir/
+200      GET    9621l   4963w   83740c http://admirer.htb/utility-scripts/info.php
+200      GET      11l      8w       32c http://admirer.htb/utility-scripts/phptest.php
+
+
 
 **Adminer.php**
 
