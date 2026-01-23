@@ -177,7 +177,37 @@ However, when I replace “localhost” with my local IP, I do receive a call
   <img src="/assets/images/admirer/Captura25.PNG" width="700">
 </p>
 
+
+
 MySQL configuration:
 
-To make this connection work the first we have to do is initiate a functional sql server. 
+To make this connection work the first we have to do is initiate a functional sql server. This is fairly easy in kali:
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/admirer]
+└─$ sudo service mysql start  
+
+──(kali㉿kali)-[~/hackthebox/admirer]
+└─$ sudo mysql -u root
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 32
+Server version: 11.4.5-MariaDB-1 Debian n/a
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Support MariaDB developers by giving a star at https://github.com/MariaDB/server
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> create database admirertest;
+Query OK, 1 row affected (0.000 sec)
+
+MariaDB [(none)]> create user 'admirertest'@'10.129.229.101' identified by 'passwordtest';
+Query OK, 0 rows affected (0.004 sec)
+
+MariaDB [(none)]> GRANT ALL on admirertest.* TO 'admirertest'@'10.129.229.101';
+Query OK, 0 rows affected (0.002 sec)
+
+MariaDB [(none)]> FLUSH PRIVILEGES;
+Query OK, 0 rows affected (0.000 sec)
+```
 
