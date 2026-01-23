@@ -119,9 +119,26 @@ Nonetheless, we now know that the directory contains four PHP scripts:
 
 Out of these, the most interesting ones are `admin_tasks.php` and `db_admin.php`.
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura16.PNG" width="700">
-</p>
+```php
+<?php
+$servername = "localhost";
+$username   = "waldo";
+$password   = "Wh3r3_1s_w4ld0?";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+echo "Connected successfully";
+
+// TODO: Finish implementing this or find a better open source alternative
+?>
+```
+
 
 Why is this interesting? I tried the given credentials via SSH and FTP but had no success.  
 Despite looking plain at first, accessing it returns a 404. Looking at the comment at the bottom, it seems they already found a “better open source alternative”:
@@ -133,9 +150,72 @@ Despite looking plain at first, accessing it returns a 404. Looking at the comme
 Why is `admin_tasks.php` interesting?  
 Beyond being the longest of the four scripts, this one actually has functionality — it executes system commands.
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura18.PNG" width="700">
-</p>
+```php
+<html>
+<head>
+  <title>Administrative Tasks</title>
+</head>
+<body>
+
+<h3>Admin Tasks Web Interface (v0.01 beta)</h3>
+
+<?php
+// Web interface to the admin_tasks script
+
+if (isset($_REQUEST['task'])) {
+
+    $task = $_REQUEST['task'];
+
+    if ($task == '1' || $task == '2' || $task == '3' ||
+        $task == '4' || $task == '5' || $task == '6' || $task == '7') {
+
+        /*
+        **********************************************************************
+        Available options:
+          1) View system uptime
+          2) View logged in users
+          3) View crontab (current user only)
+          4) Backup passwd file (not working)
+          5) Backup shadow file (not working)
+          6) Backup web data (not working)
+          7) Backup database (not working)
+
+        NOTE: Options 4-7 are currently NOT working because they need root
+              privileges. I'm leaving them in the valid tasks in case I figure
+              out a way to securely run code as root from PHP.
+        **********************************************************************
+        */
+
+        echo str_replace(
+            "\n",
+            "<br />",
+            shell_exec("/opt/scripts/admin_tasks.sh $task 2>&1")
+        );
+
+    } else {
+        echo("Invalid task.");
+    }
+}
+?>
+
+<p>
+<h4>Select task:</h4>
+<form method="POST">
+  <select name="task">
+    <option value="1">View system uptime</option>
+    <option value="2">View logged in users</option>
+    <option value="3">View crontab</option>
+    <option value="4" disabled>Backup passwd file</option>
+    <option value="5" disabled>Backup shadow file</option>
+    <option value="6" disabled>Backup web data</option>
+    <option value="7" disabled>Backup database</option>
+  </select>
+  <input type="submit" value="Submit">
+</form>
+
+</body>
+</html>
+```
 
 <p align="center">
   <img src="/assets/images/admirer/Captura19.PNG" width="700">
@@ -145,18 +225,48 @@ After reviewing `admin_tasks.php`, I initially thought about some form of RCE, b
 
 While experimenting with this, I also ran another scan against `/utility-scripts`, this time focusing specifically on PHP files, to check if there were any scripts missing from our backup.
 
-feroxbuster \
-  -u http://admirer.htb/utility-scripts \
-  -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt \
-  -x php
+```bash
+┌──(kali㉿kali)-[~/hackthebox/admirer]
+└─$ feroxbuster \
+    -u http://admirer.htb/utility-scripts \
+    -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt \
+    -x php
 
-
-At this point I wasn’t satisfied, so I tried another wordlist (I actually tested four in total, and this one finally paid off):
+──────────────────────────────────────────────────────────────
+Target URL            : http://admirer.htb/utility-scripts
+Threads               : 50
+Wordlist              : directory-list-2.3-medium.txt
+Status Codes          : All
+Timeout               : 7s
+User-Agent            : feroxbuster/2.11.0
+Extensions            : php
+HTTP Methods          : GET
+Recursion Depth       : 4
+──────────────────────────────────────────────────────────────
 
 403      GET      91l     28w      320c http://admirer.htb/utility-scripts/
 403      GET      91l     28w      314c http://admirer.htb/admin-dir/
 200      GET    9621l   4963w   83740c http://admirer.htb/utility-scripts/info.php
 200      GET      11l      8w       32c http://admirer.htb/utility-scripts/phptest.php
+```
+
+
+
+At this point I wasn’t satisfied, so I tried another wordlist (I actually tested four in total, and this one finally paid off):
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/admirer]
+└─$ feroxbuster \
+    -u http://admirer.htb/utility-scripts \
+    -w /usr/share/wordlists/seclists/Discovery/Web-Content/big.txt \
+    -x php -q
+
+403      GET      91l     31w      276c http://admirer.htb/utility-scripts/
+403      GET      91l     28w      320c http://admirer.htb/admin-dir/
+200      GET    9621l   4963w   83740c http://admirer.htb/utility-scripts/info.php
+200      GET     961l    493w    83740c http://admirer.htb/utility-scripts/adminer.php   <-- interesting
+200      GET      11l      8w       32c http://admirer.htb/utility-scripts/phptest.php
+```
 
 
 
