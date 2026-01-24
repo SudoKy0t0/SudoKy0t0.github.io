@@ -541,4 +541,76 @@ I remember from before that index.php actually contained some credentials. It do
   <img src="/assets/images/admirer/Captura35.PNG" width="700">
 </p>
 
-The password is now different than the one in index.php from the ftp server:
+The password is now different than the one in index.php from the ftp server, I’ll spray this newly obtain password in ssh:
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/admirer]
+└─$ sshpass -p '&<h5b~yK3F#{PaPB&dA}{H>' ssh waldo@admirer.htb
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Permissions 0664 for '/home/kali/.ssh/id_rsa' are too open.
+This private key will be ignored.
+Load key "/home/kali/.ssh/id_rsa": bad permissions
+
+Linux admirer 4.9.0-19-amd64 x86_64 GNU/Linux
+You have new mail.
+Last login: Thu Aug 24 16:09:42 2023 from 10.10.14.23
+
+waldo@admirer:~$
+```
+Our user.txt can be found in /waldo/home/user.txt:
+
+```bash
+waldo@admirer:~$ ls -la
+total 28
+drwxr-x--- 3 waldo waldo 4096 Apr 29  2020 .
+drwxr-xr-x 9 root  root  4096 Dec  2  2019 ..
+lrwxrwxrwx 1 waldo waldo    9 Nov 29  2019 .bash_history -> /dev/null
+-rw-r--r-- 1 waldo waldo  220 Nov 29  2019 .bash_logout
+-rw-r--r-- 1 waldo waldo 3526 Nov 29  2019 .bashrc
+lrwxrwxrwx 1 waldo waldo    9 Dec  2  2019 .lesshst -> /dev/null
+lrwxrwxrwx 1 waldo waldo    9 Nov 29  2019 .mysql_history -> /dev/null
+drwxr-xr-x 2 waldo waldo 4096 Apr 29  2020 .nano
+-rw-r--r-- 1 waldo waldo  675 Nov 29  2019 .profile
+-rw-r----- 1 root  waldo   33 Jan 24 17:28 user.txt
+```
+```bash
+waldo@admirer:~$ pwd
+/home/waldo
+```
+
+Root shell:
+
+Whenever I get a plaintext password, I’ll always check first our sudo privileges:
+
+```bash
+waldo@admirer:~$ sudo -l
+[sudo] password for waldo:
+
+Matching Defaults entries for waldo on admirer:
+    env_reset,
+    env_file=/etc/sudoenv,
+    mail_badpass,
+    secure_path=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,
+    listpw=always
+
+User waldo may run the following commands on admirer:
+    (ALL) SETENV: /opt/scripts/admin_tasks.sh
+```
+
+This script was being run by /admin_tasks.php, as the backup indicated to us. 
+One crucial thing that I don’t see very often is the “SETENV” tag. To check what this means, no better place than the [sudoers manual of linux](https://linux.die.net/man/5/sudoers).
+
+> **SETENV and NOSETENV**
+>
+> These tags override the value of the setenv option on a per-command basis.
+> Note that if SETENV has been set for a command, the user may disable the
+> env_reset option from the command line via the `-E` option.
+>
+> Additionally, environment variables set on the command line are not subject
+> to the restrictions imposed by `env_check`, `env_delete`, or `env_keep`.
+> As such, only trusted users should be allowed to set variables in this manner.
+>
+> If the command matched is `ALL`, the SETENV tag is implied for that command;
+> this default may be overridden by use of the NOSETENV tag.
