@@ -17,7 +17,7 @@ Admirer is an easy machine on HackTheBox that shows the importance of basic dire
 
 ---
 
-## Enumeration
+## Initial Enumeration
 
 ### Nmap Scan
 
@@ -361,6 +361,8 @@ if (isset($_REQUEST['task'])) {
   <img src="/assets/images/admirer/Captura19.PNG" width="700">
 </p>
 
+### Shell as waldo
+
 After reviewing `admin_tasks.php`, I initially thought about some form of RCE, but reading through the code didn’t help much. The script is protected against common attack paths.
 
 While experimenting with this, I also ran another scan against `/utility-scripts`, this time focusing specifically on PHP files, to check if there were any scripts missing from our backup.
@@ -522,7 +524,7 @@ Finally, we restart the server and try again:
   <img src="/assets/images/admirer/Captura29.PNG" width="700">
 </p>
 
-Adminer File Read:
+### Adminer file read
 
 Among the newly discovered privileges, one in particular stood out: the `SQL command` option.
 This feature allows us to execute arbitrary SQL queries directly on the server, which significantly expands the attack surface.
@@ -623,7 +625,7 @@ waldo@admirer:~$ pwd
 /home/waldo
 ```
 
-Root shell:
+### Shell as root
 
 Whenever I get a plaintext password, I’ll always check first our sudo privileges:
 
@@ -870,6 +872,6 @@ Checking our listener:
   <img src="/assets/images/admirer/Captura39.PNG" width="700">
 </p>
 
-Why this machine is vulnerable
+### Why this machine is vulnerable
 
 Several small security oversights are chained together. In the first stage, internal files and backups are exposed, which allows an attacker to recover valid login credentials and gain initial access to the system. Once logged in, the system permits a normal user to run certain administrative tasks with higher privileges. These tasks rely on scripts that trust the user’s environment too much and do not properly restrict how they are executed. Because of this, a user with limited access can influence how administrative programs run and eventually gain full control of the machine.
