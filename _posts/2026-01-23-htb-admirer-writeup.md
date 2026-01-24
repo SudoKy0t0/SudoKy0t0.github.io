@@ -141,17 +141,49 @@ The most interesting information here is the FTP user. As we saw earlier, there 
 
 These two files both look interesting, so I transferred them to my machine for further analysis:
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura10.PNG" width="700">
-</p>
+```bash
+┌──(kali㉿kali)-[~]
+└─$ ftp admirer.htb
+Connected to admirer.htb.
+220 (vsFTPd 3.0.3)
+Name (admirer.htb:kali): ftpuser
+331 Please specify the password.
+Password:
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+
+ftp> ls
+229 Entering Extended Passive Mode (|||35170|)
+150 Here comes the directory listing.
+-rw-r--r--    1 0        0          3405 Dec 02  2019 dump.sql
+-rw-r--r--    1 0        0       5270987 Dec 03  2019 html.tar.gz
+226 Directory send OK.
+```
+```bash
+ftp> ls
+229 Entering Extended Passive Mode (|||53039|)
+150 Here comes the directory listing.
+-rw-r--r--    1 0        0            3405 Dec 02  2019 dump.sql
+-rw-r--r--    1 0        0         5270987 Dec 03  2019 html.tar.gz
+226 Directory send OK.
+
+ftp> prompt off
+Interactive mode off.
+
+ftp> mget *
+local: dump.sql remote: dump.sql
+150 Opening BINARY mode data connection for dump.sql (3405 bytes).
+226 Transfer complete.
+
+local: html.tar.gz remote: html.tar.gz
+150 Opening BINARY mode data connection for html.tar.gz (5270987 bytes).
+226 Transfer complete.
+```
+
+
 
 I had high expectations for `dump.sql`, but it doesn’t reveal anything interesting. As stated, it’s just a backup for a database named `admirerdb` that contains only one table with the contents of the main page.
-
-<p align="center">
-  <img src="/assets/images/admirer/Captura11.PNG" width="700">
-</p>
-
-
 
 ```bash
 ┌──(kali㉿kali)-[~/hackthebox/admirer/utility-scripts]
