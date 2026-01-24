@@ -124,20 +124,30 @@ Recursion Depth       : 4
 **Credentials.txt**
 
 <p align="center">
-  <img src="/assets/images/admirer/Captura7.PNG" width="700">
+  <img src="/assets/images/admirer/Captura8.PNG" width="700">
 </p>
 
 **Contacts.txt**
 
 <p align="center">
-  <img src="/assets/images/admirer/Captura8.PNG" width="700">
+  <img src="/assets/images/admirer/Captura9.PNG" width="700">
 </p>
+
 
 The most interesting information here is the FTP user. As we saw earlier, there is an FTP server that doesn’t allow anonymous access. With our newly obtained credentials, we can now log in:
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura9.PNG" width="700">
-</p>
+```bash
+┌──(kali㉿kali)-[~]
+└─$ ftp admirer.htb
+Connected to admirer.htb.
+220 (vsFTPd 3.0.3)
+Name (admirer.htb:kali): ftpuser
+331 Please specify the password.
+Password:
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+```
 
 These two files both look interesting, so I transferred them to my machine for further analysis:
 
