@@ -56,15 +56,16 @@ Next stop, port 80. Clicking around doesn’t reveal anything interesting and th
   <img src="/assets/images/admirer/Captura2.PNG" width="700">
 </p>
 
+<p align="center">
+  <img src="/assets/images/admirer/Captura3.PNG" width="700">
+</p>
+
 Nmap showed us that there’s a robots.txt. Taking a look at it reveals an interesting directory, `/admin-dir`, however it returns a 403 — forbidden.
 
 <p align="center">
   <img src="/assets/images/admirer/Captura5.PNG" width="700">
 </p>
 
-<p align="center">
-  <img src="/assets/images/admirer/Captura3.PNG" width="700">
-</p>
 
 <p align="center">
   <img src="/assets/images/admirer/Captura4.PNG" width="700">
