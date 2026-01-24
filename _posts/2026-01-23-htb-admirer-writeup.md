@@ -287,7 +287,7 @@ Despite looking plain at first, accessing it returns a 404. Looking at the comme
 </p>
 
 Why is `admin_tasks.php` interesting?  
-Beyond being the longest of the four scripts, this one actually has functionality — it executes system commands.
+Beyond being the longest of the four scripts, this one actually has functionality, it executes system commands.
 
 ```php
 <html>
