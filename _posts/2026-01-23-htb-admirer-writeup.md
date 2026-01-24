@@ -869,3 +869,7 @@ Checking our listener:
 <p align="center">
   <img src="/assets/images/admirer/Captura39.PNG" width="700">
 </p>
+
+Why this machine is vulnerable
+
+Several small security oversights are chained together. In the first stage, internal files and backups are exposed, which allows an attacker to recover valid login credentials and gain initial access to the system. Once logged in, the system permits a normal user to run certain administrative tasks with higher privileges. These tasks rely on scripts that trust the user’s environment too much and do not properly restrict how they are executed. Because of this, a user with limited access can influence how administrative programs run and eventually gain full control of the machine.
