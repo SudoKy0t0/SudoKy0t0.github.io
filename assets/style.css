@@ -35,3 +35,7 @@ hr {
 .post-content img {
   cursor: zoom-in;
 }
+
+.post-content img:hover {
+  opacity: 0.95;
+}
