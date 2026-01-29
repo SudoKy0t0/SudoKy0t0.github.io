@@ -52,7 +52,24 @@ Nmap reveals four open ports.
 
 Port 21 is running a vsftpd FTP service. Anonymous login is not permitted; however, the service is using an outdated and well-known version of vsftpd, which has historically been associated with serious vulnerabilities.
 
+Port 22 is our a SSH server, not much to do here.
 
+Ports 80 and 443 both host web applications running on the Node.js Express framework. In addition, the HTTPS service on port 443 exposes a certificate containing a common name, which we can add to our /etc/hosts file for proper name resolution.
+
+### Port 80
+
+Reviewing port 80, there's not really much content in it. It semms like a login or subscription page with a QR code. The button `Get Free Trial` lacks functionality and only redirects us to `/`, which is the main page.
+
+<p align="center">
+  <img src="/assets/images/lacasadepapel/Captura2.PNG" width="700">
+</p>
+
+<p align="center">
+  <img src="/assets/images/lacasadepapel/Captura3.PNG" width="700">
+</p>
+
+
+### Port 21
 
 A quick research will show us [CVE-2011-2523](https://www.cvedetails.com/cve/CVE-2011-2523/). The CVE explains that the executable downloadable from the source contains a malicious beackdoor and a little bit further into research reveals that users logging into a compromised vsftpd-2.3.4 server may issue a :) smileyface as the username and gain a command shell on port 6200.
 
@@ -70,7 +87,10 @@ Due to the age of this CVE, reliable proof-of-concept exploits are easy to find 
 Psy Shell v0.9.9 (PHP 7.2.10 — cli) by Justin Hileman
 $
 ```
-The exploit works, however, we don't get a bash shell. Instead, we have a Psy Shell, which is the interpreter for PHP code, similar to python's interactive shell. This means we have to execute commands using php language.
+The exploit works, however, we don't get a bash shell. Instead, we obtained a Psy Shell which is the interpreter for PHP code, similar to python's interactive shell. This means we have to execute commands using php language.
+
+We can try with the most common PHP calls to achieve command execution, such as system() or exec() however, these fail as they are not defined.
+
 
 
 
