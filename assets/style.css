@@ -31,3 +31,7 @@ hr {
   border: none;
   border-top: 1px solid #1f2933;
 }
+
+.post-content img {
+  cursor: zoom-in;
+}
