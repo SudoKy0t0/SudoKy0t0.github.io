@@ -223,7 +223,7 @@ MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPczpU3s4Pmwdb
 """
 $
 ```
-A bit of Googling reveals that a ca.key is a cryptographic key used by a Certificate Authority (CA), a trusted entity responsible for issuing and signing digital certificates. These certificates are used to verify identities and enable secure communications.
+Why's this interesting? A bit of Googling reveals that a ca.key is a cryptographic key used by a Certificate Authority (CA), a trusted entity responsible for issuing and signing digital certificates. These certificates are used to verify identities and enable secure communications.
 
 With this in mind, and knowing that access to port 443 requires a valid, signed certificate, this key becomes especially interesting. Using it, we can generate our own certificate that the server will trust, allowing us to authenticate successfully over HTTPS.
 
@@ -262,6 +262,35 @@ The information we want is over here.
     <img src="/assets/images/lacasadepapel/Captura8.PNG" width="700">
   </a>
 </p>
+
+Following this [post](https://arminreiter.com/2022/01/create-your-own-certificate-authority-ca-using-openssl/), we can get an idea on how to create our own self-signed certificate with the newly obtained ca.key. 
+
+In the referenced post, the process is divided into multiple steps using OpenSSL. The first step involves creating a private key to sign the certificate. In our case, this step can be skipped, as we already have access to the required key. Moving on to the second step, we can proceed with signing the certificate.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel/cert]
+└─$ openssl req -x509 -new -nodes -key ca.key -sha256 -days 1826 -out papel.crt
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:
+State or Province Name (full name) [Some-State]:
+Locality Name (eg, city) []:
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:
+Organizational Unit Name (eg, section) []:
+Common Name (e.g. server FQDN or YOUR name) []: lacasadepapel.htb
+Email Address []:
+```
+Now, to be able to use it in Firefox, we must change the format. A quick search on google answer the question.
+
+> Firefox primarily uses the PKCS#12 format (files with `.p12` or `.pfx` extensions)
+> for importing personal user certificates (with private keys) and also supports
+> standard PEM formats (Base64-encoded `.cer`, `.crt`, `.pem` files).
+
 
 
 
