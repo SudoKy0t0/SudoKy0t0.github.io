@@ -39,3 +39,7 @@ hr {
 .post-content img:hover {
   opacity: 0.95;
 }
+
+html {
+  overflow-y: scroll;
+}
