@@ -62,13 +62,13 @@ Reviewing port 80, there's not really much content in it. It semms like a login 
 
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura2.PNG" class="glightbox">
-    <img src="/assets/images/lacasadepapel/Captura2.PNG" width="800">
+    <img src="/assets/images/lacasadepapel/Captura2.PNG" width="700">
   </a>
 </p>
 
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura3.PNG" class="glightbox">
-    <img src="/assets/images/lacasadepapel/Captura3.PNG" width="800">
+    <img src="/assets/images/lacasadepapel/Captura3.PNG" width="700">
   </a>
 </p>
 
