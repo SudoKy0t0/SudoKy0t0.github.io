@@ -49,8 +49,15 @@ Nmap done: 1 IP address (1 host up) scanned in 29.14 seconds
 ```
 
 
-Nmap reveals a few interesting ports, starting with port 21, FTP, where anonymous access is not allowed, so that is as far as we can go there.
-Next stop, port 80. Clicking around doesn’t reveal anything interesting and the contact form seems to not be implemented yet. Running feroxbuster in the background while I play around with the page.
+Nmap reveals a few interesting ports. 
+
+Starting with port 21, FTP, where anonymous access is not allowed, so that is as far as we can go there.
+
+Next stop, port 80
+
+### Port 80
+
+Clicking around doesn’t reveal anything interesting and the contact form seems to not be implemented yet. Running feroxbuster in the background while I play around with the page.
 
 <p align="center">
   <img src="/assets/images/admirer/Captura2.PNG" width="700">
