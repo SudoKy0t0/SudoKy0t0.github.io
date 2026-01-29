@@ -66,6 +66,8 @@ Reviewing port 80, there's not really much content in it. It semms like a login 
   </a>
 </p>
 
+It does make a POST request, but tinkering around does not bear any fruits.
+
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura3.PNG" class="glightbox">
     <img src="/assets/images/lacasadepapel/Captura3.PNG" width="700">
