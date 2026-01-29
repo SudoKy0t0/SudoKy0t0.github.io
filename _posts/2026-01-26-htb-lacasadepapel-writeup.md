@@ -84,10 +84,11 @@ Port 443 shows the same page but slightly different. This time we get a 401 unat
   </a>
 </p>
 
+With this in mind, we're left with port 21.
 
 ### Port 21
 
-A quick research will show us [CVE-2011-2523](https://www.cvedetails.com/cve/CVE-2011-2523/). The CVE explains that the executable downloadable from the source contains a malicious beackdoor and a little bit further into research reveals that users logging into a compromised vsftpd-2.3.4 server may issue a :) smileyface as the username and gain a command shell on port 6200.
+A quick research will show us that this version has a very critical CVE:[CVE-2011-2523](https://www.cvedetails.com/cve/CVE-2011-2523/). The CVE explains that the executable downloadable from the source contains a malicious beackdoor and a little bit further research reveals that users logging into a compromised vsftpd-2.3.4 server may issue a :) smileyface as the username and gain a command shell on port 6200.
 
 Due to the age of this CVE, reliable proof-of-concept exploits are easy to find and well documented. I'm going to be using this [one](https://github.com/Hellsender01/vsftpd_2.3.4_Exploit)
 
@@ -103,9 +104,31 @@ Due to the age of this CVE, reliable proof-of-concept exploits are easy to find 
 Psy Shell v0.9.9 (PHP 7.2.10 — cli) by Justin Hileman
 $
 ```
-The exploit works, however, we don't get a bash shell. Instead, we obtained a Psy Shell which is the interpreter for PHP code, similar to python's interactive shell. This means we have to execute commands using php language.
+The exploit works, however, we don't get a bash shell. Instead, we obtained a [Psy](https://psysh.org/) Shell which is an interpreter for PHP code, similar to python's interactive shell. This means we have to execute commands using php language.
 
-We can try with the most common PHP calls to achieve command execution, such as system() or exec() however, these fail as they are not defined.
+We can try with the most common PHP calls to achieve command execution, such as system() or exec() however, these will fail.
+
+```bash
+Psy Shell v0.9.9 (PHP 7.2.10 — cli) by Justin Hileman
+$ exec('id');
+PHP Fatal error:  Call to undefined function exec() in Psy Shell code on line 1
+$ system('id');
+PHP Fatal error:  Call to undefined function system() in Psy Shell code on line 1
+$
+```
+
+Something that can provide us with a lot of information is phpinfo(). This one works and it shows us why our calls were not working.
+
+```bash
+...
+disable_functions => exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source
+display_errors => Off => Off
+display_startup_errors => Off => Off
+...
+```
+
+
+
 
 
 
