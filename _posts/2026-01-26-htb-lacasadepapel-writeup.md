@@ -61,11 +61,15 @@ Ports 80 and 443 both host web applications running on the Node.js Express frame
 Reviewing port 80, there's not really much content in it. It semms like a login or subscription page with a QR code. The button `Get Free Trial` lacks functionality and only makes a post that redirects us to `/`, which is the main page.
 
 <p align="center">
-  <img src="/assets/images/lacasadepapel/Captura2.PNG" width="800">
+  <a href="/assets/images/lacasadepapel/Captura2.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura2.PNG" width="800">
+  </a>
 </p>
 
 <p align="center">
-  <img src="/assets/images/lacasadepapel/Captura3.PNG" width="800">
+  <a href="/assets/images/lacasadepapel/Captura3.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura3.PNG" width="800">
+  </a>
 </p>
 
 
