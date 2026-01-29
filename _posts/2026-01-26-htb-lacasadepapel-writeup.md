@@ -76,7 +76,7 @@ It does make a POST request, but tinkering around does not bear any fruits.
 
 ### Port 443
 
-Port 443 shows the same page but slightly different. This time we get a 401 unathorized from the page, prompting us for a `client certificate`.
+Port 443 shows the same page but slightly different. This time we get a 401 unathorized, prompting us for a `client certificate`.
 
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura4.PNG" class="glightbox">
@@ -196,7 +196,7 @@ PHP Warning:  scandir(/home/berlin/.ssh): failed to open dir: Permission denied 
 $
 ```
 
-Checking on all users directoires, the most interesting one is `nairobi`. This one contains a ca.key that we can read. To read files, we can use file_get_contents.
+Checking on all users directoires, the most interesting one is `nairobi`. This one contains a ca.key that we can read. To read files, we can use `file_get_contents`.
 
 ```bash
 $ scandir('/home/nairobi');
@@ -228,6 +228,42 @@ A bit of Googling reveals that a ca.key is a cryptographic key used by a Certifi
 With this in mind, and knowing that access to port 443 requires a valid, signed certificate, this key becomes especially interesting. Using it, we can generate our own certificate that the server will trust, allowing us to authenticate successfully over HTTPS.
 
 ### Shell as professor
+
+Following the strategy, we'll sign a cetificate for ourselves using the ca.key found. This will hopefully give us access to the page in 443.
+
+First, we have to look at the configuration of the certificate in the page. We'll click on the little lock at the top of the page and click on `connection not secure`.
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura5.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura5.PNG" width="700">
+  </a>
+</p>
+
+Next, click on `more information`.
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura6.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura6.PNG" width="700">
+  </a>
+</p>
+
+And now on `view certificate`.
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura7.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura7.PNG" width="700">
+  </a>
+</p>
+
+The information we want is over here.
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura8.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura8.PNG" width="700">
+  </a>
+</p>
+
+
 
 
 
