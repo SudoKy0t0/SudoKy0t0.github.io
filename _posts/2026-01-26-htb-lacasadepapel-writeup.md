@@ -223,7 +223,11 @@ MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPczpU3s4Pmwdb
 """
 $
 ```
+A bit of Googling reveals that a ca.key is a cryptographic key used by a Certificate Authority (CA), a trusted entity responsible for issuing and signing digital certificates. These certificates are used to verify identities and enable secure communications.
 
+With this in mind, and knowing that access to port 443 requires a valid, signed certificate, this key becomes especially interesting. Using it, we can generate our own certificate that the server will trust, allowing us to authenticate successfully over HTTPS.
+
+### Shell as professor
 
 
 
