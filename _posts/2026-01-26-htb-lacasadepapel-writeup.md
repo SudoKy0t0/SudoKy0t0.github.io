@@ -287,11 +287,14 @@ Email Address []:
 ```
 Now, to be able to use it in Firefox, we must change the format. A quick search on google answer the question.
 
-> Firefox primarily uses the PKCS#12 format (files with `.p12` or `.pfx` extensions)
+> "Firefox primarily uses the PKCS#12 format (files with `.p12` or `.pfx` extensions)
 > for importing personal user certificates (with private keys) and also supports
-> standard PEM formats (Base64-encoded `.cer`, `.crt`, `.pem` files).
+> standard PEM formats (Base64-encoded `.cer`, `.crt`, `.pem` files)."
 
+With OpenSSL, is pretty easy, we just need to read the [man](https://docs.openssl.org/1.1.1/man1/pkcs12/#notes)
 
+> Create a PKCS#12 file:
+> openssl pkcs12 -export -in file.pem -out file.p12 -name "My Certificate"
 
 
 
