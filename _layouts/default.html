@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>{{ page.title }} | {{ site.title }}</title>
   <link rel="stylesheet" href="/assets/style.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
 </head>
 <body>
 
@@ -29,5 +31,11 @@
   <p>© {{ site.time | date: "%Y" }} {{ site.title }}</p>
 </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      GLightbox();
+    });
+  </script>
 </body>
 </html>
