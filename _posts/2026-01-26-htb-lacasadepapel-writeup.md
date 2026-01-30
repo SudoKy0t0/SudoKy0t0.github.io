@@ -516,9 +516,33 @@ I tried to read /etc/supervisord.conf but we don't have enough permissions. I st
 
 In the [man](https://supervisord.org/introduction.html#features) page we can get a clear picture.
 
-> *Supervisor is a client/server system that allows its users to control a number of processes on UNIX-like operating systems.*
+> *"Supervisor is a client/server system that allows its users to control a number of processes on UNIX-like operating systems."*
 
 Under the section "Supervisor Components", we have a definition of what supervisord does.
 
-> *The server piece of supervisor is named supervisord. It is responsible for starting child programs at its own invocation, responding to commands from clients, restarting crashed or exited subprocesseses, logging its subprocess stdout and stderr output, and generating and handling “events” corresponding to points in subprocess lifetimes.*
+> *"The server piece of supervisor is named supervisord. It is responsible for starting child programs at its own invocation, responding to commands from clients, restarting crashed or exited subprocesseses, logging its subprocess stdout and stderr output, and generating and handling “events” corresponding to points in subprocess lifetimes."*
+
+So, it pretty much runs processes as cron does, that's convenient. Our new pspy scan is revealing a few interesting things too.
+
+```bash
+2026/01/30 17:59:01 FS:                 OPEN | /etc/supervisord.conf
+2026/01/30 17:59:01 FS:               ACCESS | /etc/supervisord.conf
+2026/01/30 17:59:01 FS:                 OPEN | /usr/bin/coreutils
+2026/01/30 17:59:01 FS:               ACCESS | /usr/bin/coreutils
+2026/01/30 17:59:01 FS:        CLOSE_NOWRITE | /usr/bin/coreutils
+2026/01/30 17:59:01 FS:             OPEN DIR | /home/professor
+2026/01/30 17:59:01 FS:             OPEN DIR | /home/professor/
+2026/01/30 17:59:01 FS:           ACCESS DIR | /home/professor
+2026/01/30 17:59:01 FS:           ACCESS DIR | /home/professor/
+2026/01/30 17:59:01 FS:           ACCESS DIR | /home/professor
+2026/01/30 17:59:01 FS:           ACCESS DIR | /home/professor/
+2026/01/30 17:59:01 FS:    CLOSE_NOWRITE DIR | /home/professor
+2026/01/30 17:59:01 FS:    CLOSE_NOWRITE DIR | /home/professor/
+2026/01/30 17:59:01 FS:                 OPEN | /home/professor/memcached.ini
+2026/01/30 17:59:01 FS:               ACCESS | /home/professor/memcached.ini
+2026/01/30 17:59:01 FS:        CLOSE_NOWRITE | /home/professor/memcached.ini
+```
+
+From this output I can guess supervisord is starting memcached.ini each certain period of time. We don't have the permissions to edit memcached.ini but we do have permissions over the directory memcached.ini is sitting on. This means that while we can't edit memcached.ini, we can rename it or delete it and put a new memcached.ini in it.
+
 
