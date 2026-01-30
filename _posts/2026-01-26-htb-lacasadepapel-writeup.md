@@ -13,7 +13,7 @@ categories: [ctf]
 - **OS:** Linux
 - **Difficulty:** Easy
 
-La Casa de Papel is an easy machine that highlights the importance of keeping software up to date. While the difficulty is low, the machine is longer than usual, as it requires several distinct steps to fully compromise. It also introduces interesting concepts related to SSL certificates and secure connections.
+La Casa de Papel is an easy machine that highlights the importance of keeping software up to date. While the machine per se is easy, the machine is longer than usual, as it requires several distinct steps to fully compromise. It also introduces interesting concepts related to SSL certificates and secure connections.
 
 ---
 
@@ -349,9 +349,19 @@ Now, reloading the webpage, we should get a request for our valid certificate. C
   </a>
 </p>
 
+We are presented with a "`Private Area`", featuring two sections "Season 1" and "Season 2". Inside of them we have what looks like videos of the whole show. When clicking for the files, it doesn download an empty .avi file. However, when putting our cursor on top of the file we can see some pretty interesting things.
+
 <p align="center">
-  <a href="/assets/images/lacasadepapel/Captura17.PNG" class="glightbox">
-    <img src="/assets/images/lacasadepapel/Captura17.PNG" width="700">
+  <a href="/assets/images/lacasadepapel/Captura18.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura18.PNG" width="700">
+  </a>
+</p>
+
+First, we have in the URL a variable named path, which always asked to be tested for LFI. Also, in the bottom of the page, we can see the name of the file. We can "Open Link in New Tab" to take a better look at it.
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura19.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura19.PNG" width="700">
   </a>
 </p>
 
