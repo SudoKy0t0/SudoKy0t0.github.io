@@ -468,4 +468,10 @@ lacasadepapel [~]$ ls
 memcached.ini  memcached.js  node_modules
 lacasadepapel [~]$ 
 ```
+Checking first manual enumeration, I can't see anything obvious. We don't have the password of professor, so I can't check on sudo. The only thing that caught my attention was this file in the /home directory, as it is using sudo as `nobody`.
 
+```bash
+lacasadepapel [~]$ cat memcached.ini
+[program:memcached]
+command = sudo -u nobody /usr/bin/node /home/professor/memcached.js
+```
