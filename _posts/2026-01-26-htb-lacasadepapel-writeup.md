@@ -597,6 +597,69 @@ bash-4.4#
 
 ### Why's this machine vulnerable?
 
+La Casa de Papel is vulnerable mainly due to poor security hygiene and unsafe configurations, rather than any single complex exploit.
+
+First, the machine exposes outdated software to the internet. The FTP service is running an old version of vsftpd that contains a known backdoor. Because this vulnerability has been public for years, exploiting it is trivial once discovered. It is worth noting that this machine includes a custom service listening on port 6200 that spawns a Psy Shell for any incoming connection. This behavior becomes clear once we inspect the system after obtaining root access.
+
+```bash
+bash-4.4# netstat -tnlp
+netstat -tnlp
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN      3264/node
+tcp        0      0 127.0.0.1:8000          0.0.0.0:*               LISTEN      3263/node
+tcp        0      0 127.0.0.1:11211         0.0.0.0:*               LISTEN      3133/memcached
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      3262/node
+tcp        0      0 0.0.0.0:21              0.0.0.0:*               LISTEN      3221/vsftpd
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      3171/sshd
+tcp        0      0 0.0.0.0:6200            0.0.0.0:*               LISTEN      3261/node
+tcp        0      0 :::22                   :::*                    LISTEN      3171/sshd
+bash-4.4# ps aux | grep 3261
+ps aux | grep 3261
+ 3261 dali      0:00 /usr/bin/node /home/dali/server.js
+17344 root      0:00 grep 3261
+bash-4.4# cat /home/dali/server.js
+cat /home/dali/server.js
+const net = require('net')
+const spawn = require('child_process').spawn
+
+const server = net.createServer(function(socket) {
+    const sh = spawn('/usr/bin/psysh')
+    sh.stdin.resume()
+    sh.stdout.on('data', function (data) {
+        socket.write(data)
+    })
+    sh.stderr.on('data', function (data) {
+        socket.write(data)
+    })
+    socket.on('data', function (data) {
+        try {
+          sh.stdin.write(data)
+        }
+        catch(e) {
+          socket.end()
+        }
+    })
+    socket.on('end', function () {
+    })
+    socket.on('error', function () {
+    })
+});
+
+server.listen(6200, '0.0.0.0');
+bash-4.4# 
+````
+Inspecting the associated process reveals that the service is implemented using Node.js and explicitly launches psysh.
+
+
+Second, sensitive files are poorly protected. Through limited access to a web service, it is possible to read private files such as a Certificate Authority private key. This key should never be accessible to users, as it allows anyone to generate trusted certificates and bypass authentication.
+
+Third, the web application fails to properly validate user input. A simple path parameter allows directory traversal, enabling attackers to read arbitrary files on the system, including SSH private keys.
+
+Finally, privilege separation is misconfigured. A root-managed service (supervisord) repeatedly loads configuration files from a user-writable directory. Even though the file itself is protected, controlling the directory allows an attacker to replace it and execute arbitrary commands as root.
+
+Individually, none of these issues are particularly advanced. Together, they form a clear attack path from initial access all the way to full system compromise.
+
 
 
 
