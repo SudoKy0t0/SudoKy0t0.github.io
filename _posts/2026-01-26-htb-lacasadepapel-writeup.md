@@ -288,15 +288,71 @@ Email Address []:
 Now, to be able to use it in Firefox, we must change the format. A quick search on google answer the question.
 
 > *"Firefox primarily uses the PKCS#12 format (files with `.p12` or `.pfx` extensions)
-> for importing personal user certificates (with private keys) and also supports
-> standard PEM formats (Base64-encoded `.cer`, `.crt`, `.pem` files)."*
+> for importing personal user certificates (with private keys)"*
 
 With OpenSSL, is pretty easy, we just need to read the [man](https://docs.openssl.org/1.1.1/man1/pkcs12/#notes)
 
 > *Create a PKCS#12 file:
 > openssl pkcs12 -export -in file.pem -out file.p12 -name "My Certificate"*
 
+```bash
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel/cert]
+└─$ openssl pkcs12 -export -in papel.crt -inkey ca.key -out papel.p12
+Enter Export Password:
+Verifying - Enter Export Password:
+```
+Now that we have generated a PKCS#12 certificate, the next step is to import it into Firefox so we can actually use it for authentication. Before doing so, we should temporarily disable Burp Suite, as it already injects its own PortSwigger CA certificate, which would interfere with the client certificate we want to present.
 
+First, we'll go to `Settings` in Firefox.
 
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura9.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura9.PNG" width="700">
+  </a>
+</p>
+
+In the settings page, we'll search for `"certificates"` and click on `"view certficates"`.
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura10.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura10.PNG" width="700">
+  </a>
+</p>
+
+In the certificate manager, we'll search into the `"Your certificates"` tab. In there, we'll import our pkcs12 certificate.
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura11.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura11.PNG" width="700">
+  </a>
+</p>
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura12.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura12.PNG" width="700">
+  </a>
+</p>
+
+It should now appear in the tab.
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura13.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura13.PNG" width="700">
+  </a>
+</p>
+
+Now, reloading the webpage, we should get a request for our valid certificate. Clicking "Ok" should now give us access to the page.
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura16.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura16.PNG" width="700">
+  </a>
+</p>
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura17.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura17.PNG" width="700">
+  </a>
+</p>
 
 
