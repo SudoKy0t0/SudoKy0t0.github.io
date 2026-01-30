@@ -475,3 +475,24 @@ lacasadepapel [~]$ cat memcached.ini
 [program:memcached]
 command = sudo -u nobody /usr/bin/node /home/professor/memcached.js
 ```
+I'll proceed to run linpeas and pspy.
+
+Linpeas gives us process with PID 3133, which is related to the file I found in the home directory.
+
+```bash
+╔══════════╣ Running processes (cleaned)
+╚ Check weird & unexpected processes run by root
+...
+PID   USER       TIME  COMMAND
+1     root       0:00  /sbin/init
+3133  memcache   0:00  /usr/bin/memcached -d -p 11211 -U 11211 -l 127.0.0.1 -m 64 -c 1024
+3171  root       0:00  /usr/sbin/sshd
+3221  root       0:00  /usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf
+3261  dali       0:00  /usr/bin/node /home/dali/server.js
+3262  nobody     0:00  /usr/bin/node /home/oslo/server.js
+3263  berlin     0:00  /usr/bin/node /home/berlin/server.js
+3264  nobody     0:01  /usr/bin/node /home/nairobi/server.js
+...
+```
+
+
