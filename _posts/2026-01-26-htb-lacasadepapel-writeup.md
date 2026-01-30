@@ -1,7 +1,7 @@
 ---
 layout: posts
 title: "HTB — La Casa de Papel Writeup"
-date: 2026-01-23
+date: 2026-01-26
 tags: [htb, writeup, linux, web]
 categories: [ctf]
 ---
