@@ -505,9 +505,20 @@ After letting pspy run for a while, I can see something is definitely starting e
 2026/01/30 17:53:00 CMD: UID=0     PID=13783  | start-stop-daemon --stop --exec /usr/bin/supervisord --pidfile /var/run/supervisord.pid 
 2026/01/30 17:53:00 CMD: UID=0     PID=13790  | /bin/sh /lib/rc/sh/openrc-run.sh /etc/init.d/supervisord start 
 2026/01/30 17:53:00 CMD: UID=0     PID=13805  | start-stop-daemon --start --exec /usr/bin/supervisord --pidfile /var/run/supervisord.pid --background --make-pidfile -- --nodaemon --pidfile /var/run/supervisord.pid --configuration /etc/supervisord.conf                                                                                                                                                                                                                             
-2026/01/30 17:53:00 CMD: UID=0     PID=13806  | start-stop-daemon --start --exec /usr/bin/supervisord --pidfile /var/run/supervisord.pid --background --make-pidfile -- --nodaemon --pidfile /var/run/supervisord.pid --configuration /etc/supervisord.conf                                                                                                                                                                                                                             
+2026/01/30 17:53:00 CMD: UID=0     PID=13806  | start-stop-daemon --start --exec /usr/bin/supervisord --pidfile /var/run/supervisord.pid --background --make-pidfile -- --nodaemon --pidfile /var/run/supervisord.pid -configuration /etc/supervisord.conf                                                                                                                                                                                                                             
 2026/01/30 17:53:00 CMD: UID=0     PID=13808  | /bin/sh /lib/rc/sh/openrc-run.sh /etc/init.d/supervisord start 
 2026/01/30 17:53:01 CMD: UID=0     PID=13813  | 
 2026/01/30 17:53:02 CMD: UID=0     PID=13814  | /usr/bin/python2 /usr/bin/supervisord --nodaemon --pidfile /var/run/supervisord.pid --configuration /etc/supervisord.conf
 -----
 ```
+
+I tried to read /etc/supervisord.conf but we don't have enough permissions. I still need a little bit more of information, I'll run pspy with the -f flag for file system events and in the meanwhile I'll search what supervisord is what exactly does it do.
+
+In the [man](https://supervisord.org/introduction.html#features) page we can get a clear picture.
+
+> *Supervisor is a client/server system that allows its users to control a number of processes on UNIX-like operating systems.*
+
+Under the section "Supervisor Components", we have a definition of what supervisord does.
+
+> *The server piece of supervisor is named supervisord. It is responsible for starting child programs at its own invocation, responding to commands from clients, restarting crashed or exited subprocesseses, logging its subprocess stdout and stderr output, and generating and handling “events” corresponding to points in subprocess lifetimes.*
+
