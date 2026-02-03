@@ -227,7 +227,7 @@ Why's this interesting? A bit of Googling reveals that a ca.key is a cryptograph
 
 With this in mind, and knowing that access to port 443 requires a valid, signed certificate, this key becomes especially interesting. Using it, we can generate our own certificate that the server will trust, allowing us to authenticate successfully over HTTPS.
 
-### Shell as professor
+## Shell as professor
 
 Following the strategy, I'll sign a cetificate for myself using the ca.key found. This will hopefully give me access to the page in 443.
 
@@ -468,6 +468,8 @@ lacasadepapel [~]$ ls
 memcached.ini  memcached.js  node_modules
 lacasadepapel [~]$ 
 ```
+### Shell as root
+
 Checking first manual enumeration, I can't see anything obvious. We don't have the password of professor, so I can't check on sudo. The only thing that caught my attention was this file in the /home directory, as it is using sudo as `nobody`.
 
 ```bash
