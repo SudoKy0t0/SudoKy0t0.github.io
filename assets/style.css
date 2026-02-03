@@ -16,6 +16,10 @@ a {
   text-decoration: none;
 }
 
+:root {
+  --header-height: 220px;
+}
+
 a:hover {
   text-decoration: underline;
 }
@@ -56,7 +60,7 @@ html {
 
 .toc {
   position: fixed;
-  top: 140px;
+  top: var(--header-height);
   left: 20px;
   width: 220px;
   font-size: 0.9rem;
