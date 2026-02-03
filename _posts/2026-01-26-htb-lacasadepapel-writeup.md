@@ -263,6 +263,8 @@ The information I want is over here.
   </a>
 </p>
 
+## Self-signed certificate
+
 Following this [post](https://arminreiter.com/2022/01/create-your-own-certificate-authority-ca-using-openssl/), we can get an idea on how to create our own self-signed certificate with the newly obtained ca.key. 
 
 In the referenced post, the process is divided into multiple steps using OpenSSL. The first step involves creating a private key to sign the certificate. In this case, this step can be skipped, as we already have access to the required key. Moving on to the second step, we can proceed with signing the certificate.
@@ -357,7 +359,7 @@ We are presented with a "`Private Area`", featuring two sections "Season 1" and 
   </a>
 </p>
 
-First, we have in the URL a variable named path, which always asks to be tested for LFI. Also, in the bottom of the page, we can see the name of the file. I'll click "Open Link in New Tab" to take a better look at it.
+First, we have in the URL a variable named path, which always asks to be tested for `Directory Traversal`. Also, in the bottom of the page, we can see the name of the file. I'll click "Open Link in New Tab" to take a better look at it.
 
 <p align="center">
   <a href="/assets/images/lacasadepapel/Captura19.PNG" class="glightbox">
@@ -514,6 +516,8 @@ After letting pspy run for a while, I can see something is definitely starting e
 -----
 ```
 
+## Supervisord
+
 I tried to read /etc/supervisord.conf but we don't have enough permissions. I still need a little bit more of information, I'll run pspy with the -f flag for file system events and in the meanwhile I'll search what supervisord is and what exactly executes.
 
 In the [man](https://supervisord.org/introduction.html#supervisor-components) page we can get a clear picture.
@@ -597,7 +601,7 @@ drwx------  2 root root 4096 Oct 27  2018 .ssh
 bash-4.4# 
 ```
 
-### Why's this machine vulnerable?
+## Why's this machine vulnerable?
 
 La Casa de Papel is vulnerable mainly due to poor security hygiene and unsafe configurations, rather than any single complex exploit.
 
