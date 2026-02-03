@@ -22,8 +22,11 @@
   <hr>
 </header>
 
-<main>
-  {{ content }}
+<main class="page-layout">
+  {% include toc.html %}
+  <div class="page-content">
+    {{ content }}
+  </div>
 </main>
 
 <footer>
