@@ -10,17 +10,20 @@
 <body>
 
 <header>
-  <h1><a href="/">{{ site.title }}</a></h1>
-  <p>{{ site.description }}</p>
+  <div class="container">
+    <h1><a href="/">{{ site.title }}</a></h1>
+    <p>{{ site.description }}</p>
 
-  <nav>
-    <a href="/">Home</a> |
-    <a href="/about">About</a> |
-    <a href="/tags">Tags</a>
-  </nav>
+    <nav>
+      <a href="/">Home</a> |
+      <a href="/about">About</a> |
+      <a href="/tags">Tags</a>
+    </nav>
 
-  <hr>
+    <hr>
+  </div>
 </header>
+
 
 <main class="page-layout">
   {% include toc.html %}
