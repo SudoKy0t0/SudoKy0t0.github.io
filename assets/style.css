@@ -19,6 +19,39 @@ header {
   padding-right: var(--page-gutter);
 }
 
+.site-header {
+  width: 100%;
+  border-bottom: 1px solid #1f2933;
+  margin-bottom: 2rem;
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.site-title a {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+.site-nav a {
+  margin-left: 1.2rem;
+  font-size: 0.9rem;
+  color: #9aa4b2;
+  text-decoration: none;
+}
+
+.site-nav a:hover {
+  color: #ffffff;
+}
+
 footer {
   max-width: 900px;
   margin: 0 auto;
