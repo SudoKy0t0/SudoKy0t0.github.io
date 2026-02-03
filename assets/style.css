@@ -61,6 +61,12 @@ html {
   overflow-y: scroll;
 }
 
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+
+
 .page-content {
   max-width: 900px;
   margin: 0 auto;
