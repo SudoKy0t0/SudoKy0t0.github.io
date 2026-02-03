@@ -1,17 +1,41 @@
 {% if page.path contains "_posts" %}
-  {% assign headers = content | split: '<h2' %}
-  {% if headers.size > 1 %}
-    <aside class="toc">
-      <h3>Machine Steps</h3>
-      <ul>
-        {% for header in headers offset:1 %}
-          {% assign title = header | split: '</h2>' | first | split: '>' | last %}
-          {% assign id = title | slugify %}
-          <li>
-            <a href="#{{ id }}">{{ title }}</a>
-          </li>
-        {% endfor %}
+{% assign lines = content | split: '<h' %}
+
+<aside class="toc">
+  <h3>Machine Steps</h3>
+  <ul>
+    {% assign open_sublist = false %}
+
+    {% for line in lines %}
+      {% if line startswith '2' %}
+        {% if open_sublist %}
+          </ul>
+          {% assign open_sublist = false %}
+        {% endif %}
+
+        {% assign title = line | split: '</h2>' | first | split: '>' | last %}
+        {% assign id = title | slugify %}
+        <li>
+          <a href="#{{ id }}">{{ title }}</a>
+        </li>
+
+      {% elsif line startswith '3' %}
+        {% if open_sublist == false %}
+          <ul>
+          {% assign open_sublist = true %}
+        {% endif %}
+
+        {% assign title = line | split: '</h3>' | first | split: '>' | last %}
+        {% assign id = title | slugify %}
+        <li class="toc-sub">
+          <a href="#{{ id }}">{{ title }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+    {% if open_sublist %}
       </ul>
-    </aside>
-  {% endif %}
+    {% endif %}
+  </ul>
+</aside>
 {% endif %}
