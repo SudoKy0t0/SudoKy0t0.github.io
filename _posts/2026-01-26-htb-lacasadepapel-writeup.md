@@ -263,7 +263,7 @@ The information I want is over here.
   </a>
 </p>
 
-## Self-signed certificate
+### Self-signed certificate
 
 Following this [post](https://arminreiter.com/2022/01/create-your-own-certificate-authority-ca-using-openssl/), we can get an idea on how to create our own self-signed certificate with the newly obtained ca.key. 
 
