@@ -1,3 +1,7 @@
+:root {
+  --page-gutter: 2rem;
+}
+
 body {
   background: #0b0f19;
   color: #e5e7eb;
@@ -8,12 +12,17 @@ body {
 footer {
   max-width: 900px;
   margin: 0 auto;
-  padding-left: 260px;
+  padding-left: calc(220px + var(--page-gutter) + 2rem);
 }
 
 a {
   color: #38bdf8;
   text-decoration: none;
+}
+
+header {
+  padding-left: var(--page-gutter);
+  padding-right: var(--page-gutter);
 }
 
 :root {
@@ -55,13 +64,13 @@ html {
 .page-content {
   max-width: 900px;
   margin: 0 auto;
-  padding-left: 260px;
+  padding-left: calc(220px + var(--page-gutter) + 2rem);
 }
 
 .toc {
   position: fixed;
   top: var(--header-height);
-  left: 20px;
+  left: var(--page-gutter);
   width: 220px;
   font-size: 0.9rem;
   opacity: 0.9;
@@ -106,6 +115,6 @@ html {
 
   .page-content,
   footer {
-    padding-left: 0;
+    padding-left: var(--page-gutter);
   }
 }
