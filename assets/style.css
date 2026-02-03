@@ -1,23 +1,17 @@
 :root {
   --page-gutter: 2rem;
+  --header-height: 220px;
 }
+
+/* ===== Base layout ===== */
 
 body {
   background: #0b0f19;
   color: #e5e7eb;
   font-family: monospace;
-  padding: 2rem;
-}
-
-footer {
   max-width: 900px;
-  margin: 0 auto;
-  padding-left: calc(220px + var(--page-gutter) + 2rem);
-}
-
-a {
-  color: #38bdf8;
-  text-decoration: none;
+  margin: auto;
+  padding: var(--page-gutter);
 }
 
 header {
@@ -25,13 +19,23 @@ header {
   padding-right: var(--page-gutter);
 }
 
-:root {
-  --header-height: 220px;
+footer {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ===== Links ===== */
+
+a {
+  color: #38bdf8;
+  text-decoration: none;
 }
 
 a:hover {
   text-decoration: underline;
 }
+
+/* ===== Code blocks ===== */
 
 pre {
   background: #020617;
@@ -44,9 +48,15 @@ code {
   color: #eab308;
 }
 
+/* ===== Misc ===== */
+
 hr {
   border: none;
   border-top: 1px solid #1f2933;
+}
+
+html {
+  overflow-y: scroll;
 }
 
 .post-content img {
@@ -57,31 +67,18 @@ hr {
   opacity: 0.95;
 }
 
-html {
-  overflow-y: scroll;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-
-
-.page-content {
-  max-width: 900px;
-  margin: 0 auto;
-  padding-left: 260px;
-}
+/* ===== TOC (independent, unobtrusive) ===== */
 
 .toc {
   position: fixed;
-  top: 220px;
-  left: calc((100vw - 1200px) / 2 + 2rem);
+  top: var(--header-height);
+  left: var(--page-gutter);
   width: 220px;
-  font-size: 0.9rem;
-  opacity: 0.9;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  border-left: 1px solid #1f2933;
+  padding-left: 1rem;
 }
-
 
 .toc h3 {
   text-transform: uppercase;
@@ -110,18 +107,10 @@ html {
   color: #ffffff;
 }
 
-.page-content {
-  margin-left: 260px;
-  max-width: 900px;
-}
+/* ===== Mobile ===== */
 
 @media (max-width: 900px) {
   .toc {
     display: none;
   }
-
-  .page-content {
-    padding-left: 0;
-  }
 }
-
