@@ -59,6 +59,10 @@ html {
   overflow-y: scroll;
 }
 
+.post-content h1 {
+  margin-top: 2rem;
+}
+
 .post-content img {
   cursor: zoom-in;
 }
