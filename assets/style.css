@@ -6,7 +6,9 @@ body {
 }
 
 footer {
-  margin-left: 260px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-left: 260px;
 }
 
 a {
@@ -46,15 +48,15 @@ html {
   overflow-y: scroll;
 }
 
-.page-layout {
-  display: flex;
-  gap: 2rem;
-  align-items: flex-start;
+.page-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-left: 260px;
 }
 
 .toc {
   position: fixed;
-  top: 140px;    
+  top: 140px;
   left: 20px;
   width: 220px;
   font-size: 0.9rem;
@@ -98,7 +100,8 @@ html {
     display: none;
   }
 
-  .page-content {
-    margin-left: 0;
+  .page-content,
+  footer {
+    padding-left: 0;
   }
 }
