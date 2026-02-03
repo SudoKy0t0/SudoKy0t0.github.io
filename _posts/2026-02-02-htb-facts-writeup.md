@@ -16,6 +16,7 @@ categories: [ctf]
 Facts is a beginner-friendly machine that emphasizes the importance of thorough enumeration. The attack path is short and straightforward, with simple, well-defined steps. It serves as an excellent introduction for newcomers learning how to identify and chain basic findings effectively.
 
 As this machine is currently active, a full write-up cannot be provided. The complete write-up will be published once the machine has been retired, however, if you wish to discuss it, feel free to contact!
+
 ---
 
 ## Initial Enumeration
