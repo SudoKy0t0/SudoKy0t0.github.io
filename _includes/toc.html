@@ -1,17 +1,17 @@
 {% if page.path contains "_posts" %}
-{% assign headers = content | split: '<h2' %}
-{% if headers.size > 1 %}
-<aside class="toc">
-  <h3>Machine Steps</h3>
-  <ul>
-    {% for header in headers offset:1 %}
-      {% assign title = header | split: '</h2>' | first | split: '>' | last %}
-      {% assign id = title | slugify %}
-      <li>
-        <a href="#{{ id }}">{{ title }}</a>
-      </li>
-    {% endfor %}
-  </ul>
-</aside>
-{% endif %}
+  {% assign headers = content | split: '<h2' %}
+  {% if headers.size > 1 %}
+    <aside class="toc">
+      <h3>Machine Steps</h3>
+      <ul>
+        {% for header in headers offset:1 %}
+          {% assign title = header | split: '</h2>' | first | split: '>' | last %}
+          {% assign id = title | slugify %}
+          <li>
+            <a href="#{{ id }}">{{ title }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </aside>
+  {% endif %}
 {% endif %}
