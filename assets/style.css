@@ -70,17 +70,18 @@ html {
 .page-content {
   max-width: 900px;
   margin: 0 auto;
-  padding-left: calc(220px + var(--page-gutter) + 2rem);
+  padding-left: 260px;
 }
 
 .toc {
   position: fixed;
-  top: var(--header-height);
-  left: var(--page-gutter);
+  top: 220px;
+  left: calc((100vw - 1200px) / 2 + 2rem);
   width: 220px;
   font-size: 0.9rem;
   opacity: 0.9;
 }
+
 
 .toc h3 {
   text-transform: uppercase;
@@ -119,8 +120,8 @@ html {
     display: none;
   }
 
-  .page-content,
-  footer {
-    padding-left: var(--page-gutter);
+  .page-content {
+    padding-left: 0;
   }
 }
+
