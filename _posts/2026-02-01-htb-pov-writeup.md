@@ -270,7 +270,7 @@ Following this post and the official repo, we can get a good idea on how to craf
 - --dk="74477.....3", decryption key from the web.config.
 - --va="SHA1", validation algorithm provided in the web.config.
 - --vk="5620D3D0...68", validation key from the web.config.
-- -path="/portfolio", also included in the web.config.
+- --path="/portfolio", also included in the web.config.
 - -c "ping 10.10.14.nopeek", the command to run, for a test I'll run a simple ping.
 
 
