@@ -194,7 +194,7 @@ That said, inspecting the page’s source code revealed something much more inte
 
 The Download CV link triggers the JavaScript function __doPostBack('download', ''). What really stands out here are the __VIEWSTATEGENERATOR and __EVENTVALIDATION fields involved in the request. A quick search shows that these are part of the ASP.NET WebForms framework, confirming that the application is running on WebForms.
 
-While trying to capture the download with Burp Suite, I noticed that no POST request was showing up, which made traffic analysis a bit tricky. Because of that, I decided to rely exclusively on Burp’s intercept mode moving forward.
+While trying to capture the download with Burp Suite, no POST request was showing up, which made traffic analysis a bit tricky. Because of that, I decided to rely exclusively on Burp’s intercept mode moving forward.
 
 ### Initial foothold
 
@@ -208,11 +208,17 @@ Reviewing the traffic from BurpSuite, we can see the already mentioned ASP.NET W
 
 To understand the plan ahead, I'll explain what is ASP.NET WebForms and how does it handle states, as well as what these headers mean and do.
 
-ASP.NET Web Forms is an older ASP.NET framework that handles user interactions using server-side events instead of direct HTTP requests. It keeps track of page state through mechanisms like ViewState and EventValidation, which are sent back and forth between the client and the server. As a visual learner myself, I prefer to see the flow rather than just reading it. This chart represent the exchange in information and states between server and client in ASP-NET WebForms.
+ASP.NET Web Forms is an older ASP.NET framework that handles user interactions using server-side events rather than direct, clearly defined HTTP endpoints. It keeps track of page state through mechanisms such as ViewState and EventValidation, which are exchanged between the client and the server on each interaction.
+
+As a visual learner myself, I find it easier to understand this behavior by looking at the flow rather than just reading about it. The chart below represents how information and state are passed back and forth between the client and the server in an ASP.NET Web Forms application.
 
 <p align="center">
   <a href="/assets/images/pov/Captura10.PNG" class="glightbox">
     <img src="/assets/images/pov/Captura10.PNG" width="700">
   </a>
 </p>
+
+From an attack point of view, anything the client can influence and that later gets processed by the server is always worth looking at. In this case, the state-related fields used by Web Forms stand out, since they play a direct role in how the server decides what logic to execute.
+
+It’s also worth keeping in mind that actions in ASP.NET Web Forms don’t generate the kind of clean, obvious POST requests you might expect. Instead, everything is handled through generic postbacks to the same page, with the server figuring out what to do based on the submitted state data.
 
