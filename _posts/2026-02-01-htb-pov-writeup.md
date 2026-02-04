@@ -222,3 +222,27 @@ From an attack point of view, anything the client can influence and that later g
 
 It’s also worth keeping in mind that actions in ASP.NET Web Forms don’t generate the kind of clean, obvious POST requests you might expect. Instead, everything is handled through generic postbacks to the same page, with the server figuring out what to do based on the submitted state data.
 
+First of all, the most obvious would be the "`file`" paremeter, I'll test for LFI. For Windows, my go to file is win.ini, sitting in C:/Windows/win.ini. Using dot dot slash won't give anything and common bypasses such as //....// won't work either, so I'll try for something that is sitting on the same directory.
+
+<p align="center">
+  <a href="/assets/images/pov/Captura11.png" class="glightbox">
+    <img src="/assets/images/pov/Captura11.png" width="700">
+  </a>
+</p>
+
+<p align="center">
+  <a href="/assets/images/pov/Captura12.png" class="glightbox">
+    <img src="/assets/images/pov/Captura12.png" width="700">
+  </a>
+</p>
+
+Default.aspx gives us results. I couldn't get it work till I tried absolute paths with backward slashes.
+
+<p align="center">
+  <a href="/assets/images/pov/Captura13.png" class="glightbox">
+    <img src="/assets/images/pov/Captura13.png" width="700">
+  </a>
+</p>
+
+
+
