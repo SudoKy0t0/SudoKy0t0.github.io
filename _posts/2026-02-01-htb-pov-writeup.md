@@ -206,15 +206,15 @@ Reviewing the traffic from BurpSuite, we can see the already mentioned ASP.NET W
   </a>
 </p>
 
-To understand the plan ahead, I'll explain what is ASP.NET WebForms and how does it handle states, as well as what these headers mean and do.
+To understand the plan ahead, I'll explain what is ASP.NET WebForms and how does it handle states, as well as what these state-related fields mean and do.
 
 ASP.NET Web Forms is an older ASP.NET framework that handles user interactions using server-side events rather than direct, clearly defined HTTP endpoints. It keeps track of page state through mechanisms such as ViewState and EventValidation, which are exchanged between the client and the server on each interaction.
 
 As a visual learner myself, I find it easier to understand this behavior by looking at the flow rather than just reading about it. The chart below represents how information and state are passed back and forth between the client and the server in an ASP.NET Web Forms application.
 
 <p align="center">
-  <a href="/assets/images/pov/Captura10.PNG" class="glightbox">
-    <img src="/assets/images/pov/Captura10.PNG" width="700">
+  <a href="/assets/images/pov/Captura10.png" class="glightbox">
+    <img src="/assets/images/pov/Captura10.png" width="700">
   </a>
 </p>
 
