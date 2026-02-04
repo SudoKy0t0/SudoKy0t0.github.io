@@ -253,3 +253,24 @@ With a working LFI, I'll always look into interesting files, such as databases o
     <img src="/assets/images/pov/Captura14.PNG" width="700">
   </a>
 </p>
+
+<p align="center">
+  <a href="/assets/images/pov/Captura15.PNG" class="glightbox">
+    <img src="/assets/images/pov/Captura15.PNG" width="700">
+  </a>
+</p>
+
+A quick search on google would tell us what machineKeys is and what is it used for in the ASP.NET environment. A little bit deeper research leads to this [post](https://www.claranet.com/us/blog/2019-06-13-exploiting-viewstate-deserialization-using-blacklist3r-and-ysoserialnet) which talks about deserialization from 2019.
+
+Following this post and the official repo, we can get a good idea on how to craft our payload with [ysoserial.net](https://github.com/frohoff/ysoserial). For agility purposes, we'll run the .exe in linux with mono. The flags we want are the following:
+
+- -p ViewState to set the ViewState plugin
+- -g WindowsIdentity, this is the gadget to use, usually discovered by trial and error. Many will work here.
+- --da="AES", the decryption algorithm, provided in the web.config.
+- --dk="74477.....3", decryption key from the web.config.
+- --va="SHA1", validation algorithm provided in the web.config.
+- --vk="5620D3D0...68", validation key from the web.config.
+- -path="/portfolio", also included in the web.config.
+- -c "ping 10.10.14.nopeek", the command to run, for a test I'll run a simple ping.
+
+
