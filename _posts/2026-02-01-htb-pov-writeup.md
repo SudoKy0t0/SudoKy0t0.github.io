@@ -179,18 +179,13 @@ Scanning: http://dev.pov.htb/portfolio/
 Also, a very interessting thing to note comes when checking the source code for the page.
 
 <p align="center">
-  <a href="/assets/images/pov/Captura6.PNG" class="glightbox">
-    <img src="/assets/images/pov/Captura6.PNG" width="700">
+  <a href="/assets/images/pov/Captura7.PNG" class="glightbox">
+    <img src="/assets/images/pov/Captura7.PNG" width="700">
   </a>
 </p>
 
 The `Download CV` link is calling JavaScript `__doPostBack('download', '')`, and the most interesting, the headers `"__VIEWSTATEGENERATOR"` and `"__EVENTVALIDATION"` invoked when using the download function. A quick search in google reveals that this headers are part of the ASP.NET WebForms, meaning this site is running ASP.NET WebForms. I had a bit of trouble trying to discover traffic with BurpSuite when downloading the CV, it won't show any POST request, so, from now on, I'll use solely the intercept function.
 
-<p align="center">
-  <a href="/assets/images/pov/Captura7.PNG" class="glightbox">
-    <img src="/assets/images/pov/Captura7.PNG" width="700">
-  </a>
-</p>
 
 ## Initial foothold
 
