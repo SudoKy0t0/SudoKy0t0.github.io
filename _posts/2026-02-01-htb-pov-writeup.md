@@ -1,7 +1,7 @@
 ---
 layout: posts
 title: "HTB — Pov Writeup"
-date: 2026-01-23
+date: 2026-02-01
 tags: [htb, writeup, windows, web]
 categories: [ctf]
 ---
