@@ -156,7 +156,7 @@ It seems like the portfolio for our previously anotated user `sfitz`. This time,
   </a>
 </p>
 
-Feroxbuster shows two interesting .aspx pages, `"default"` and `"contact"`.
+Feroxbuster shows two .aspx pages, `"default"` and `"contact"`.
 
 ```bash
 ┌──(kali㉿kali)-[~/hackthebox/pov]
@@ -176,7 +176,15 @@ Scanning: http://dev.pov.htb/
 Scanning: http://dev.pov.htb/portfolio/
 ```
 
-Also, a very interessting thing to note comes when checking the source code for the page.
+<p align="center">
+  <a href="/assets/images/pov/Captura9.PNG" class="glightbox">
+    <img src="/assets/images/pov/Captura9.PNG" width="700">
+  </a>
+</p>
+
+default.aspx is just the main index page, and contact.aspx shows a contact form that I never really got to tinker with. Digging any deeper didn’t reveal anything new.
+
+That said, inspecting the page’s source code revealed something much more interesting.
 
 <p align="center">
   <a href="/assets/images/pov/Captura7.PNG" class="glightbox">
@@ -184,9 +192,27 @@ Also, a very interessting thing to note comes when checking the source code for 
   </a>
 </p>
 
-The `Download CV` link is calling JavaScript `__doPostBack('download', '')`, and the most interesting, the headers `"__VIEWSTATEGENERATOR"` and `"__EVENTVALIDATION"` invoked when using the download function. A quick search in google reveals that this headers are part of the ASP.NET WebForms, meaning this site is running ASP.NET WebForms. I had a bit of trouble trying to discover traffic with BurpSuite when downloading the CV, it won't show any POST request, so, from now on, I'll use solely the intercept function.
+The Download CV link triggers the JavaScript function __doPostBack('download', ''). What really stands out here are the __VIEWSTATEGENERATOR and __EVENTVALIDATION fields involved in the request. A quick search shows that these are part of the ASP.NET WebForms framework, confirming that the application is running on WebForms.
 
+While trying to capture the download with Burp Suite, I noticed that no POST request was showing up, which made traffic analysis a bit tricky. Because of that, I decided to rely exclusively on Burp’s intercept mode moving forward.
 
-## Initial foothold
+### Initial foothold
 
+Reviewing the traffic from BurpSuite, we can see the already mentioned ASP.NET WebForms headers.
+
+<p align="center">
+  <a href="/assets/images/pov/Captura8.PNG" class="glightbox">
+    <img src="/assets/images/pov/Captura8.PNG" width="700">
+  </a>
+</p>
+
+To understand the plan ahead, I'll explain what is ASP.NET WebForms and how does it handle states, as well as what these headers mean and do.
+
+ASP.NET Web Forms is an older ASP.NET framework that handles user interactions using server-side events instead of direct HTTP requests. It keeps track of page state through mechanisms like ViewState and EventValidation, which are sent back and forth between the client and the server. As a visual learner myself, I prefer to see the flow rather than just reading it. This chart represent the exchange in information and states between server and client in ASP-NET WebForms.
+
+<p align="center">
+  <a href="/assets/images/pov/Captura10.PNG" class="glightbox">
+    <img src="/assets/images/pov/Captura10.PNG" width="700">
+  </a>
+</p>
 
