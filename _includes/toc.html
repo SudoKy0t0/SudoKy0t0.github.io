@@ -7,7 +7,9 @@
     {% assign open_sublist = false %}
 
     {% for line in lines %}
-      {% if line startswith '2' %}
+      {% assign level = line | slice: 0, 1 %}
+
+      {% if level == '2' %}
         {% if open_sublist %}
           </ul>
           {% assign open_sublist = false %}
@@ -19,7 +21,7 @@
           <a href="#{{ id }}">{{ title }}</a>
         </li>
 
-      {% elsif line startswith '3' %}
+      {% elsif level == '3' %}
         {% if open_sublist == false %}
           <ul>
           {% assign open_sublist = true %}
