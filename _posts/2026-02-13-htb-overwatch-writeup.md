@@ -18,8 +18,8 @@ Overwatch is a very smooth medium machine, one of my favourites so far. Anonymou
 The full writeup will be published once the machine is retired, in the meanwhile, feel free to contact!
 
 <p align="center">
-  <a href="/assets/images/overwatch/captura1.PNG.jpg" class="glightbox">
-    <img src="/assets/images/overwatch/captura1.PNG.jpg" width="700">
+  <a href="/assets/images/overwatch/captura1.png" class="glightbox">
+    <img src="/assets/images/overwatch/captura1.png" width="700">
   </a>
 </p>
 
