@@ -50,3 +50,6 @@ I enjoy going deep into:
 
 - GitHub: [github.com/SudoKy0t0](https://github.com/SudoKy0t0)
 - Email: triananavallas [at] gmail [dot] com
+- <a href="discord://-/users/704128005580259450">
+  Message me on Discord
+</a>
