@@ -17,7 +17,11 @@ Facts is a beginner-friendly machine that emphasizes the importance of thorough 
 
 As this machine is currently active, a full write-up cannot be provided. The complete write-up will be published once the machine has been retired, however, if you wish to discuss it, feel free to contact!
 
-[https://labs.hackthebox.com/achievement/machine/2044762/829](https://labs.hackthebox.com/achievement/machine/2044762/829)
+<p align="center">
+  <a href="/assets/images/facts/Captura1.PNG.jpg" class="glightbox">
+    <img src="/assets/images/facts/Captura1.PNG.jpg" width="700">
+  </a>
+</p>
 
 ---
 
