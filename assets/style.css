@@ -21,6 +21,8 @@ body {
 .post-content h2 {
   font-size: 1.8rem;
   color: #ffffff;
+  border-left: 3px solid #38bdf8;
+  padding-left: 0.6rem;
 }
 
 .post-content h3 {
