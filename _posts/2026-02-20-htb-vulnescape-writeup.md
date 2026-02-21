@@ -13,9 +13,9 @@ categories: [ctf]
 - **OS:** Windows
 - **Difficulty:** Easy
 
-VulnEscape is an easy and fun machine focused entirely on Remote Desktop. There are no web services involved and both the initial foothold and privilege escalation require you to work within the desktop environment and think creatively around its restrictions.
-
+VulnEscape is an easy and fun machine focused entirely on Remote Desktop. There are no web services involved and both the initial foothold and privilege escalation require you to work within the desktop environment and think around its restrictions.
 It’s a unique and educational box that offers great insight into Windows application security and how small details can lead to bigger issues.
+
 ---
 
 ## Initial Enumeration
