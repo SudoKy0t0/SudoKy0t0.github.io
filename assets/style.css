@@ -18,6 +18,16 @@ body {
   padding: var(--page-gutter);
 }
 
+.post-content h2 {
+  font-size: 1.8rem;
+  color: #ffffff;
+}
+
+.post-content h3 {
+  font-size: 1.4rem;
+  color: #38bdf8;
+}
+
 header {
   padding-left: var(--page-gutter);
   padding-right: var(--page-gutter);
