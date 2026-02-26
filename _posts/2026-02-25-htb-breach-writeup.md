@@ -354,7 +354,7 @@ SMB         10.129.8.90     445    BREACHDC         SYSVOL                      
 SMB         10.129.8.90     445    BREACHDC         Users           READ
 ```
 
-@@ Initial foothold
+## Initial foothold
 
 ### share and users shares
 
