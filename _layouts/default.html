@@ -36,25 +36,52 @@
   <hr>
   <p>© {{ site.time | date: "%Y" }} {{ site.title }}</p>
 </footer>
-    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        GLightbox();
+<script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  /* ---------- GLightbox ---------- */
+  GLightbox();
+
+  /* ---------- Expandable Code Blocks ---------- */
+
+  const minLines = 20;
+
+  document.querySelectorAll(".highlight pre, pre").forEach(function (block) {
+
+    const styles = window.getComputedStyle(block);
+    const lineHeight = parseFloat(styles.lineHeight);
+
+    if (!lineHeight) return;
+
+    const totalLines = Math.round(block.scrollHeight / lineHeight);
+
+    if (totalLines > minLines) {
+
+      // initial collapsed state
+      block.style.maxHeight = (lineHeight * minLines) + "px";
+      block.style.overflowY = "hidden";
+      block.style.cursor = "pointer";
+
+      block.addEventListener("click", function () {
+
+        if (block.classList.contains("expanded")) {
+          block.style.maxHeight = (lineHeight * minLines) + "px";
+          block.style.overflowY = "hidden";
+        } else {
+          block.style.maxHeight = block.scrollHeight + "px";
+          block.style.overflowY = "auto";
+        }
+
+        block.classList.toggle("expanded");
       });
-    </script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll("pre").forEach(function (block) {
+    }
 
-          if (block.scrollHeight > 350) {
-            block.addEventListener("click", function () {
-              block.classList.toggle("expanded");
-            });
-          }
+  });
 
-        });
-      });
-    </script>
+});
+</script>
 </body>
 </html>
