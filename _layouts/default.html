@@ -44,26 +44,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.querySelectorAll("div.highlighter-rouge pre").forEach(function (block) {
 
-    const styles = window.getComputedStyle(block);
-    const lineHeight = parseFloat(styles.lineHeight);
-    if (!lineHeight) return;
-
-    const totalLines = Math.round(block.scrollHeight / lineHeight);
+    const text = block.innerText || block.textContent;
+    const totalLines = text.split('\n').length;
 
     if (totalLines > minLines) {
 
+      const lineHeight = 18; // safe fallback height
       const collapsedHeight = lineHeight * minLines;
 
       block.style.maxHeight = collapsedHeight + "px";
       block.style.overflowY = "hidden";
 
-      const parent = block.parentElement;
-      parent.style.position = "relative";
+      const container = block.closest(".highlighter-rouge");
+      container.style.position = "relative";
 
       const btn = document.createElement("button");
       btn.className = "expand-btn";
       btn.innerText = "expand";
-
       btn.style.position = "absolute";
       btn.style.bottom = "8px";
       btn.style.right = "8px";
@@ -76,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
           block.style.overflowY = "hidden";
           btn.innerText = "expand";
         } else {
-          block.style.maxHeight = block.scrollHeight + "px";
+          block.style.maxHeight = "none";
           block.style.overflowY = "auto";
           btn.innerText = "collapse";
         }
@@ -84,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
         block.classList.toggle("expanded");
       });
 
-      parent.appendChild(btn);
+      container.appendChild(btn);
     }
 
   });
