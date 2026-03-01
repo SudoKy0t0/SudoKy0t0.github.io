@@ -36,12 +36,25 @@
   <hr>
   <p>© {{ site.time | date: "%Y" }} {{ site.title }}</p>
 </footer>
-
     <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      GLightbox();
-    });
-  </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        GLightbox();
+      });
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("pre").forEach(function (block) {
+
+          if (block.scrollHeight > 350) {
+            block.addEventListener("click", function () {
+              block.classList.toggle("expanded");
+            });
+          }
+
+        });
+      });
+    </script>
 </body>
 </html>
