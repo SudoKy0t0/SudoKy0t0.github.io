@@ -142,7 +142,7 @@ html {
 
 .expand-btn {
   position: absolute;
-  bottom: 28px;   /* ⬅ move above scrollbar */
+  bottom: 10px;   /* ⬅ move above scrollbar */
   right: 10px;
 
   background: rgba(2, 6, 23, 0.85);
@@ -158,6 +158,7 @@ html {
 
 .highlighter-rouge {
   position: relative;
+  padding-bottom: 35px; /* space for button */
 }
 
 .expand-btn:hover {
@@ -165,7 +166,7 @@ html {
   color: #020617;
 }
 
-/* ===== TOC (independent, unobtrusive) ===== */
+/* ===== TOC ===== */
 
 .toc {
   position: fixed;
