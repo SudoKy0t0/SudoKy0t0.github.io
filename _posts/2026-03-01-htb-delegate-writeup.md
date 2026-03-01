@@ -13,7 +13,8 @@ categories: [ctf]
 - **OS:** Windows
 - **Difficulty:** Medium
 
-Delegate is a medium-difficulty Active Directory machine that blends misconfigurations with delegation abuse for lateral movement and privilege escalation. It’s a fun and practical way to strengthen your understanding of Kerberos, SPNs, and core AD attack paths..
+Delegate is a medium-difficulty Active Directory machine that blends misconfigurations with delegation abuse for lateral movement and privilege escalation. It’s a fun and practical way to strengthen your understanding of Kerberos, SPNs, and core AD attack paths.
+
 ---
 
 ## Initial enumeration
