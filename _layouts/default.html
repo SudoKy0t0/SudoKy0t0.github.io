@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const minLines = 20;
 
-  document.querySelectorAll(".highlight pre").forEach(function (block) {
+  document.querySelectorAll("div.highlighter-rouge pre").forEach(function (block) {
 
     const styles = window.getComputedStyle(block);
     const lineHeight = parseFloat(styles.lineHeight);
