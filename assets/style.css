@@ -94,6 +94,17 @@ pre {
   padding: 1rem;
   overflow-x: auto;
   border-left: 4px solid #38bdf8;
+
+  max-height: 300px;
+  overflow-y: hidden;
+  cursor: pointer;
+  transition: max-height 0.25s ease;
+  position: relative;
+}
+
+pre.expanded {
+  max-height: 2000px; /* large enough */
+  overflow-y: auto;
 }
 
 code {
