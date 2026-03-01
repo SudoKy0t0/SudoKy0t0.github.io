@@ -36,6 +36,44 @@
   <hr>
   <p>© {{ site.time | date: "%Y" }} {{ site.title }}</p>
 </footer>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ page.title }} | {{ site.title }}</title>
+  <link rel="stylesheet" href="/assets/style.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="site-title">
+      <a href="/">{{ site.title }}</a>
+    </div>
+
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/tags">Tags</a>
+    </nav>
+  </div>
+</header>
+
+
+
+<main class="page-layout">
+  {% include toc.html %}
+  <div class="page-content">
+    {{ content }}
+  </div>
+</main>
+
+<footer>
+  <hr>
+  <p>© {{ site.time | date: "%Y" }} {{ site.title }}</p>
+</footer>
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
 <script>
@@ -99,3 +137,4 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 </body>
 </html>
+
