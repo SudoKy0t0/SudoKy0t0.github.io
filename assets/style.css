@@ -156,6 +156,10 @@ html {
   opacity: 0.9;
 }
 
+.highlighter-rouge {
+  position: relative;
+}
+
 .highlighter-rouge::after {
   content: "";
   position: absolute;
