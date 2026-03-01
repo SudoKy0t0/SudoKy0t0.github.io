@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>{{ page.title }} | {{ site.title }}</title>
   <link rel="stylesheet" href="/assets/style.css">
-
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
 </head>
 <body>
@@ -14,7 +13,6 @@
     <div class="site-title">
       <a href="/">{{ site.title }}</a>
     </div>
-
     <nav class="site-nav">
       <a href="/">Home</a>
       <a href="/about">About</a>
@@ -22,8 +20,6 @@
     </nav>
   </div>
 </header>
-
-
 
 <main class="page-layout">
   {% include toc.html %}
@@ -36,57 +32,17 @@
   <hr>
   <p>© {{ site.time | date: "%Y" }} {{ site.title }}</p>
 </footer>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>{{ page.title }} | {{ site.title }}</title>
-  <link rel="stylesheet" href="/assets/style.css">
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
-</head>
-<body>
-
-<header class="site-header">
-  <div class="header-inner">
-    <div class="site-title">
-      <a href="/">{{ site.title }}</a>
-    </div>
-
-    <nav class="site-nav">
-      <a href="/">Home</a>
-      <a href="/about">About</a>
-      <a href="/tags">Tags</a>
-    </nav>
-  </div>
-</header>
-
-
-
-<main class="page-layout">
-  {% include toc.html %}
-  <div class="page-content">
-    {{ content }}
-  </div>
-</main>
-
-<footer>
-  <hr>
-  <p>© {{ site.time | date: "%Y" }} {{ site.title }}</p>
-</footer>
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-  /* ---------- GLightbox ---------- */
   GLightbox();
-
-  /* ---------- Expandable Code Blocks ---------- */
 
   const minLines = 20;
 
-  document.querySelectorAll("highlight pre").forEach(function (block) {
+  document.querySelectorAll(".highlight pre").forEach(function (block) {
 
     const styles = window.getComputedStyle(block);
     const lineHeight = parseFloat(styles.lineHeight);
@@ -101,16 +57,16 @@ document.addEventListener("DOMContentLoaded", function () {
       block.style.maxHeight = collapsedHeight + "px";
       block.style.overflowY = "hidden";
 
-      // Wrap block
-      const wrapper = document.createElement("div");
-      wrapper.classList.add("code-wrapper");
-      block.parentNode.insertBefore(wrapper, block);
-      wrapper.appendChild(block);
+      const parent = block.parentElement;
+      parent.style.position = "relative";
 
-      // Create button
       const btn = document.createElement("button");
-      btn.classList.add("expand-btn");
+      btn.className = "expand-btn";
       btn.innerText = "expand";
+
+      btn.style.position = "absolute";
+      btn.style.bottom = "8px";
+      btn.style.right = "8px";
 
       btn.addEventListener("click", function (e) {
         e.stopPropagation();
@@ -128,13 +84,13 @@ document.addEventListener("DOMContentLoaded", function () {
         block.classList.toggle("expanded");
       });
 
-      wrapper.appendChild(btn);
+      parent.appendChild(btn);
     }
 
   });
 
 });
 </script>
+
 </body>
 </html>
-
