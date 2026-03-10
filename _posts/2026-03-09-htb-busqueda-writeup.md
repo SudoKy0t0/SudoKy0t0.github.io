@@ -65,6 +65,8 @@ Scrolling down a little bit in the footer, we can see this web app is built with
   </a>
 </p>
 
+## Initial Foothold
+
 ### CVE-2023-43364
 
 Although many working PoCs are publicly available, I’ll perform the exploit manually. Since the vulnerability is quite straightforward, reproducing it step by step helps understand what is happening behind the scenes rather than simply running a script.
@@ -142,10 +144,10 @@ Inspecting with burpsuite, it's now clear where we should input the command exec
 
 If we look at the code carefully, the syntax we're going to need:
 
-> `'` to close the original query string
-> `,` to inject a new function argument
-> `))` to close the injected call and the original function call
-> `#` to comment out the remaining arguments to avoid syntax errors
+- `'` to close the original query string
+- `,` to inject a new function argument
+- `))` to close the injected call and the original function call
+- `#` to comment out the remaining arguments to avoid syntax errors
 
 Finally, because this is a python interpreter using eval(), we'll need to invoke os, this is easily done with `__import__('os').popen('bash command')` or `__import__('os').system('bash command')`.
 
