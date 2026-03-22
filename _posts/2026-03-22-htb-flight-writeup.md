@@ -1,4 +1,3 @@
-<img width="761" height="325" alt="image" src="https://github.com/user-attachments/assets/809a2bce-f014-46e0-9de9-842f8475812c" />---
 layout: posts
 title: "HTB — Flight Writeup"
 date: 2026-03-22
