@@ -206,6 +206,35 @@ html {
   color: #ffffff;
 }
 
+.terminal {
+  background-color: #0d1117;
+  color: #c9d1d9;
+  padding: 16px;
+  border-radius: 10px;
+  font-family: "Fira Code", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: auto;
+  border-left: 4px solid #58a6ff;
+}
+
+.terminal span {
+  display: block;
+}
+
+.cmd {
+  color: #58a6ff;
+}
+
+.success {
+  color: #3fb950;
+  font-weight: bold;
+}
+
+.error {
+  color: #f85149;
+}
+
 /* ===== Mobile ===== */
 
 @media (max-width: 900px) {
